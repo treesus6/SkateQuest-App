@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#d2673d" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>SkateQuest</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-sA+4JWx+kp1q5z29CXZ1NX2b0zZl06YibJ7rj6JrA6k=" crossorigin="" />
+</head>
+<body>
+    <header>
+        <h1>SkateQuest 🛹🥚</h1>
+    </header>
+
+    <div id="map"></div>
+
+    <nav>
+        <button id="discoverBtn">Discover</button>
+        <button id="addSpotBtn">Add Spot</button>
+        <button id="profileBtn">Profile</button>
+        <button id="legalBtn">Legal</button>
+        <button id="centerMapBtn">🎯</button>
+    </nav>
+
+    <section id="content"></section>
+
+    <div id="customModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <p id="modalText"></p>
+        </div>
+    </div>
+
+    <div id="cameraModal" class="modal">
+        <div class="camera-container">
+            <video id="cameraPreview" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button id="recordBtn">Start Recording</button>
+                <button id="stopRecordBtn" style="display:none;">Stop Recording</button>
+                <button id="saveVideoBtn" style="display:none;">Save Video</button>
+                <button id="cancelCameraBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="legalModal" class="modal">
+        <div class="modal-content legal-content">
+            <span class="close-button">&times;</span>
+            <h2>Legal Information</h2>
+            <div id="legalText">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBd55v6rN7ngtaoXIwuQb0lHy0p8_69dzU",
+            authDomain: "skatequest-666.firebaseapp.com",
+            projectId: "skatequest-666",
+            storageBucket: "skatequest-666.firebasestorage.app",
+            messagingSenderId: "614575814578",
+            appId: "1:614575814578:web:758b0842447a0e9269d6ab",
+            measurementId: "G-ZLQZQ3CYBK"
+        };
+
+        // This is still needed for Firestore paths, but can be derived from your config
+        const appId = 'skatequest-666';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+
+        // Pass Firebase instances to the main app script
+        window.firebaseInstances = { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, appId };
+    </script>
+    
+    <script src="app.js" type="module"></script>
+</body>
+</html>
