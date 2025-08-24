@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const discoverBtn = document.getElementById('discoverBtn'), addSpotBtn = document.getElementById('addSpotBtn'), profileBtn = document.getElementById('profileBtn'), centerMapBtn = document.getElementById('centerMapBtn'), legalBtn = document.getElementById('legalBtn');
     const modal = document.getElementById('customModal'), modalText = document.getElementById('modalText'), closeButton = document.querySelector('.close-button');
     const cameraModal = document.getElementById('cameraModal'), cameraPreview = document.getElementById('cameraPreview'), recordBtn = document.getElementById('recordBtn'), stopRecordBtn = document.getElementById('stopRecordBtn'), saveVideoBtn = document.getElementById('saveVideoBtn'), cancelCameraBtn = document.getElementById('cancelCameraBtn');
-    const legalModal = document = document.getElementById('legalModal'), legalText = document.getElementById('legalText');
+    const legalModal = document.getElementById('legalModal'), legalText = document.getElementById('legalText');
 
     document.querySelectorAll('.close-button').forEach(btn => btn.onclick = () => {
         btn.closest('.modal').style.display = 'none';
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', async (e) => {
         if (e.target.classList.contains('complete-challenge-btn')) {
             const challengeId = e.target.dataset.challengeId;
-            const spotId = e.target.closest('.leaflet-popup-pane').dataset.spotId;
+            const spotId = e.target.closest('.leaflet-popup-content').parentElement.dataset.spotId;
             completeChallenge(spotId, challengeId);
         }
     });
@@ -327,6 +327,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     stopRecordBtn.onclick = () => { mediaRecorder.stop(); stopRecordBtn.style.display = 'none'; };
+    
+    cancelCameraBtn.onclick = () => closeCamera();
     
     saveVideoBtn.onclick = async () => {
         showModal("Uploading video...");
