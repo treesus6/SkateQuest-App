@@ -1,0 +1,5 @@
+[build]
+  publish = "."
+  command = ""
+
+# No build step needed — this is a plain static site. Netlify will serve files from the project root.

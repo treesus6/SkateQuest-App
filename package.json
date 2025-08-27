@@ -1,0 +1,9 @@
+{
+  "name": "skatequest-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npx http-server -p 8000",
+    "test": "echo \"no tests\""
+  }
+}
