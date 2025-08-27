@@ -1,0 +1,8 @@
+
+<svg width='192' height='192' xmlns='http://www.w3.org/2000/svg'>
+  <rect width='192' height='192' fill='#d2673d'/>
+  <rect x='40' y='90' width='112' height='12' fill='#40312f'/>
+  <circle cx='40' cy='96' r='10' fill='#333'/>
+  <circle cx='152' cy='96' r='10' fill='#333'/>
+  <text x='96' y='130' text-anchor='middle' fill='white' font-family='Arial' font-size='24'>🛹</text>
+</svg>
