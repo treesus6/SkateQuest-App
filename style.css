@@ -29,6 +29,18 @@ header { text-align: center; margin: 1em 0; }
 	animation: fadeInOut 3s ease-in-out;
 }
 
+.panel {
+	background: #111;
+	color: #fff;
+	padding: 1rem;
+	border-radius: 8px;
+}
+
+#leaderboard-list div {
+	margin: 0.5rem 0;
+	font-weight: bold;
+}
+
 @keyframes fadeInOut {
 	0% { opacity: 0; bottom: 10px; }
 	10% { opacity: 1; bottom: 20px; }

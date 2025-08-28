@@ -99,6 +99,9 @@ document.addEventListener('DOMContentLoaded', function() {
     populateSelect('/spots', spotSelect, 'name');
     populateSelect('/tricks', trickSelect, 'name');
 
+    // Render leaderboard on load
+    renderLeaderboard();
+
     // ...existing code can hook up challenge issuance, form handling, etc.
     // Issue challenge button handler: create a challenge in Firestore if possible, otherwise POST to API
     if (issueChallengeButton) {
@@ -139,6 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                     const docRef = await addDoc(collection(db, 'challenges'), payload);
                     showToast('Challenge created', 'info');
+                    // Refresh leaderboard after XP-impacting events
+                    renderLeaderboard();
                 } else {
                     // Fallback to POSTing to API
                     const apiPayload = {
@@ -157,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         body: JSON.stringify(apiPayload)
                     });
                     showToast('Challenge created via API', 'info');
+                    renderLeaderboard();
                 }
             } catch (err) {
                 console.error('Failed to create challenge', err);
@@ -164,6 +170,17 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 issueChallengeButton.disabled = false;
             }
+        });
+    }
+
+    // Rating submit wiring: default to selected spot if available
+    const ratingBtn = document.getElementById('rating-submit');
+    if (ratingBtn) {
+        ratingBtn.addEventListener('click', async () => {
+            const rating = parseInt(document.getElementById('rating-select').value, 10);
+            // prefer currently selected spot
+            const selectedSpotId = (spotSelect && spotSelect.value) ? spotSelect.value : 'spotId123';
+            await rateSpot(selectedSpotId, rating);
         });
     }
 
