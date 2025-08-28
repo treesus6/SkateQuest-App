@@ -41,6 +41,11 @@ header { text-align: center; margin: 1em 0; }
 	font-weight: bold;
 }
 
+.badges { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.badges div { background:#fff3; color:#fff; padding:.4rem .6rem; border-radius:6px; }
+
+.heatmap-toggle { margin-top:0.5rem; color:#fff; }
+
 @keyframes fadeInOut {
 	0% { opacity: 0; bottom: 10px; }
 	10% { opacity: 1; bottom: 20px; }

@@ -102,6 +102,55 @@ document.addEventListener('DOMContentLoaded', function() {
     // Render leaderboard on load
     renderLeaderboard();
 
+    // Render badges for signed-in user
+    async function renderBadgesForUser(uid) {
+        try {
+            if (!window.firebaseInstances) return;
+            const { db, doc, getDoc } = window.firebaseInstances;
+            const userRef = doc(db, 'users', uid);
+            const snap = await getDoc(userRef);
+            const data = snap.exists() ? snap.data() : {};
+            renderBadges(data.badges || {});
+        } catch (e) { console.error('renderBadgesForUser', e); }
+    }
+
+    function renderBadges(badges) {
+        const badgeEl = document.getElementById('badge-display');
+        if (!badgeEl) return;
+        badgeEl.innerHTML = '<h3>Badges</h3>';
+        const container = document.createElement('div');
+        container.className = 'badges';
+        Object.keys(badges || {}).forEach(b => {
+            if (badges[b]) {
+                const icon = document.createElement('div');
+                icon.textContent = `🏅 ${b.replace(/-/g, ' ')}`;
+                container.appendChild(icon);
+            }
+        });
+        badgeEl.appendChild(container);
+    }
+
+    async function checkAndAwardBadges(uid, userData) {
+        try {
+            if (!window.firebaseInstances) return;
+            const { db, doc, updateDoc } = window.firebaseInstances;
+            const updates = {};
+            if ((userData.xp || 0) >= 100 && !(userData.badges && userData.badges['100-xp'])) {
+                updates['badges.100-xp'] = true;
+                showToast('🏅 Badge unlocked: 100 XP!');
+            }
+            if ((userData.streak || 0) >= 5 && !(userData.badges && userData.badges['5-day-streak'])) {
+                updates['badges.5-day-streak'] = true;
+                showToast('🔥 Badge unlocked: 5-Day Streak!');
+            }
+            if (Object.keys(updates).length) {
+                const userRef = doc(db, 'users', uid);
+                await updateDoc(userRef, updates);
+                renderBadgesForUser(uid);
+            }
+        } catch (e) { console.error('checkAndAwardBadges', e); }
+    }
+
     // ...existing code can hook up challenge issuance, form handling, etc.
     // Issue challenge button handler: create a challenge in Firestore if possible, otherwise POST to API
     if (issueChallengeButton) {
@@ -142,6 +191,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                     const docRef = await addDoc(collection(db, 'challenges'), payload);
                     showToast('Challenge created', 'info');
+                    // show confirmation and link
+                    const conf = document.getElementById('challenge-confirm');
+                    if (conf) conf.innerHTML = `Created: <code>${docRef.id}</code>`;
+                    // if expiresAt present, render timer
+                    if (payload.expiresAt) renderChallengeTimer(payload.expiresAt);
                     // Refresh leaderboard after XP-impacting events
                     renderLeaderboard();
                 } else {
@@ -162,6 +216,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         body: JSON.stringify(apiPayload)
                     });
                     showToast('Challenge created via API', 'info');
+                    // API may return an id - not handled here; clear confirmation
+                    const conf = document.getElementById('challenge-confirm'); if (conf) conf.textContent = '';
                     renderLeaderboard();
                 }
             } catch (err) {
@@ -183,6 +239,46 @@ document.addEventListener('DOMContentLoaded', function() {
             await rateSpot(selectedSpotId, rating);
         });
     }
+
+    // Challenge timer rendering
+    let challengeTimerInterval = null;
+    function renderChallengeTimer(expiresAt) {
+        const el = document.getElementById('challenge-timer');
+        if (!el) return;
+        el.style.display = 'block';
+        function update() {
+            const now = Date.now();
+            const remaining = expiresAt - now;
+            if (remaining <= 0) { el.textContent = 'Expired'; clearInterval(challengeTimerInterval); return; }
+            const hrs = Math.floor(remaining / 3600000); const mins = Math.floor((remaining % 3600000)/60000); const secs = Math.floor((remaining%60000)/1000);
+            el.textContent = `Expires in ${hrs}h ${mins}m ${secs}s`;
+        }
+        if (challengeTimerInterval) clearInterval(challengeTimerInterval);
+        update();
+        challengeTimerInterval = setInterval(update, 1000);
+    }
+
+    // Heatmap rendering (requires leaflet-heat plugin available on page)
+    let heatLayer = null;
+    async function renderHeatmap() {
+        try {
+            if (!window.firebaseInstances || !window.map) return;
+            const { db, collection, getDocs } = window.firebaseInstances;
+            const snaps = await getDocs(collection(db, 'spots'));
+            const heatData = [];
+            snaps.forEach(d => {
+                const s = d.data();
+                if (s.location && s.location.lat && s.location.lng) heatData.push([s.location.lat, s.location.lng, s.visits || 1]);
+            });
+            if (window.L && window.L.heatLayer) {
+                if (heatLayer) map.removeLayer(heatLayer);
+                heatLayer = L.heatLayer(heatData, { radius: 25 }).addTo(map);
+            } else console.warn('Leaflet heat plugin not found');
+        } catch (e) { console.error('renderHeatmap', e); }
+    }
+
+    const heatToggle = document.getElementById('heatmap-toggle');
+    if (heatToggle) heatToggle.addEventListener('change', (e) => { if (e.target.checked) renderHeatmap(); else if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; } });
 
     // Complete a challenge: award XP to a user
     async function completeChallenge(challengeId, userId) {
