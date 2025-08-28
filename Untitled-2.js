@@ -1,5 +1,25 @@
 // Copyright (c) 2024 Your Name / SkateQuest. All Rights Reserved.
 
+// Defensive guard: ignore malformed JSON coming from browser extensions or other storage writers.
+// Some browser extensions write non-JSON values into storage which can cause uncaught JSON.parse
+// errors in content scripts or page handlers. This listener swallows parse errors for storage events
+// so they don't crash the app. Adjust `expectedKeys` below to limit parsing to keys your app actually uses.
+(() => {
+    const expectedKeys = null; // set to an array of keys like ['myAppKey'] to limit parsing
+    window.addEventListener('storage', ev => {
+        try {
+            if (!ev || ev.newValue == null) return;
+            if (expectedKeys && !expectedKeys.includes(ev.key)) return;
+            // Try to parse; if it's invalid JSON this will throw and be caught below.
+            JSON.parse(ev.newValue);
+        } catch (err) {
+            // Ignore malformed JSON from external writers (extensions). Keep a light log for debugging.
+            // Do not rethrow so the error is not an uncaught rejection.
+            // console.debug('Ignored non-JSON storage update for key', ev && ev.key, err && err.message);
+        }
+    });
+})();
+
 // This function will wait until the firebaseInstances object is available on the window
 async function waitForFirebase() {
     return new Promise(resolve => {

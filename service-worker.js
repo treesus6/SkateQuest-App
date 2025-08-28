@@ -1,11 +1,9 @@
-const CACHE_NAME = 'skatequest-cache-v1';
+const CACHE_NAME = 'skatequest-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/style.css',
-  '/app.js',
-  'https://unpkg.com/leaflet@1.9.3/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.3/dist/leaflet.js'
+  '/app.js'
 ];
 
 // Cache essential files during service worker installation
@@ -13,7 +11,12 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('Opened cache');
-      return cache.addAll(urlsToCache);
+      // addAll can fail if any URL is cross-origin or unavailable; add individually with safety
+      return Promise.all(urlsToCache.map((url) =>
+        cache.add(url).catch((err) => {
+          console.warn('Failed to cache', url, err);
+        })
+      ));
     })
   );
 });

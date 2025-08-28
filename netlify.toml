@@ -2,4 +2,10 @@
   publish = "."
   command = ""
 
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = true
+
 # No build step needed — this is a plain static site. Netlify will serve files from the project root.
