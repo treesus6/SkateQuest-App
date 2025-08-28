@@ -34,7 +34,19 @@
 
             <main class="main-area">
                 <div id="map" style="height:60vh; width:100%;"></div>
-                <section id="content"></section>
+                <section id="content">
+                    <!-- Spot filter -->
+                    <label for="spotFilter">Filter spots:</label>
+                    <select id="spotFilter">
+                        <option value="all">All Spots</option>
+                        <option value="ledge">Ledge</option>
+                        <option value="rail">Rail</option>
+                        <option value="gap">Gap</option>
+                    </select>
+
+                    <!-- Leaderboard -->
+                    <section id="leaderboard"></section>
+                </section>
             </main>
         </div>
 

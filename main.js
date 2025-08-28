@@ -105,6 +105,9 @@ document.addEventListener('DOMContentLoaded', function() {
         issueChallengeButton.addEventListener('click', async () => {
             const spotId = spotSelect && spotSelect.value;
             const trickId = trickSelect && trickSelect.value;
+            const titleInput = document.getElementById('challenge-title');
+            const descInput = document.getElementById('challenge-desc');
+            const xpInput = document.getElementById('challenge-xp');
             let challenger = challengerInput && challengerInput.value && challengerInput.value.trim();
             // default challenger to signed-in Firebase user ID if not provided
             try {
@@ -121,21 +124,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Prefer Firestore if firebaseInstances are ready
                 if (window.firebaseInstances && window.firebaseInstances.addDoc && window.firebaseInstances.collection) {
                     const { db, addDoc, collection, serverTimestamp } = window.firebaseInstances;
+                    // Build payload with optional title/description/xp
                     const payload = {
                         spotId,
                         trick: trickId,
                         challengerId: challenger,
                         status: 'pending',
+                        title: (titleInput && titleInput.value && titleInput.value.trim()) || `Challenge: ${trickId} at ${spotId}`,
+                        description: (descInput && descInput.value && descInput.value.trim()) || '',
+                        xp: (xpInput && parseInt(xpInput.value, 10)) || 50,
+                        createdBy: challenger,
+                        timestamp: Date.now(),
                         createdAt: serverTimestamp()
                     };
                     const docRef = await addDoc(collection(db, 'challenges'), payload);
                     showToast('Challenge created', 'info');
                 } else {
                     // Fallback to POSTing to API
+                    const apiPayload = {
+                        spotId,
+                        trick: trickId,
+                        challengerId: challenger,
+                        title: (titleInput && titleInput.value && titleInput.value.trim()) || `Challenge: ${trickId} at ${spotId}`,
+                        description: (descInput && descInput.value && descInput.value.trim()) || '',
+                        xp: (xpInput && parseInt(xpInput.value, 10)) || 50,
+                        createdBy: challenger,
+                        timestamp: Date.now()
+                    };
                     await apiFetch('/challenges', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ spotId, trickId, challenger })
+                        body: JSON.stringify(apiPayload)
                     });
                     showToast('Challenge created via API', 'info');
                 }
@@ -146,5 +165,114 @@ document.addEventListener('DOMContentLoaded', function() {
                 issueChallengeButton.disabled = false;
             }
         });
+    }
+
+    // Complete a challenge: award XP to a user
+    async function completeChallenge(challengeId, userId) {
+        try {
+            if (!window.firebaseInstances) throw new Error('Firebase not initialized');
+            const { db, doc, getDoc, updateDoc } = window.firebaseInstances;
+            const challengeRef = doc(db, 'challenges', challengeId);
+            const challengeSnap = await getDoc(challengeRef);
+            if (!challengeSnap.exists()) throw new Error('Challenge not found');
+            const xpEarned = (challengeSnap.data() && challengeSnap.data().xp) || 0;
+            const userRef = doc(db, 'users', userId);
+            await updateDoc(userRef, { xp: window.firebaseInstances.increment ? window.firebaseInstances.increment(xpEarned) : xpEarned });
+            showToast(`Challenge complete! You earned ${xpEarned} XP 🛹`, 'info');
+        } catch (err) {
+            console.error('completeChallenge error', err);
+            showToast('Failed to complete challenge', 'error');
+        }
+    }
+
+    // Spot filter UI wiring
+    const spotFilter = document.getElementById('spotFilter');
+    if (spotFilter) {
+        spotFilter.addEventListener('change', (e) => {
+            const type = e.target.value;
+            renderSpots(type);
+        });
+    }
+
+    async function renderSpots(filterType = 'all') {
+        try {
+            if (!window.firebaseInstances) return;
+            const { db, collection, getDocs } = window.firebaseInstances;
+            const snaps = await getDocs(collection(db, 'spots'));
+            // remove existing markers (assume `map` is global)
+            if (window.map && map.eachLayer) {
+                map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
+            }
+            snaps.forEach(d => {
+                const spot = d.data();
+                if (filterType === 'all' || spot.type === filterType) {
+                    L.marker([spot.lat, spot.lng]).addTo(map).bindPopup(spot.name);
+                }
+            });
+        } catch (err) {
+            console.error('renderSpots error', err);
+        }
+    }
+
+    // Leaderboard rendering
+    async function renderLeaderboard() {
+        try {
+            if (!window.firebaseInstances) return;
+            const { db, collection, getDocs, query, orderBy, limit } = window.firebaseInstances;
+            const leaderboardEl = document.getElementById('leaderboard');
+            if (!leaderboardEl) return;
+            leaderboardEl.innerHTML = '<h2>Top Skaters</h2>';
+            const q = query(collection(db, 'users'), orderBy('xp', 'desc'), limit(10));
+            const snaps = await getDocs(q);
+            snaps.forEach(docSnap => {
+                const user = docSnap.data();
+                const entry = document.createElement('div');
+                entry.textContent = `${user.displayName || docSnap.id}: ${user.xp || 0} XP`;
+                leaderboardEl.appendChild(entry);
+            });
+        } catch (err) {
+            console.error('renderLeaderboard error', err);
+        }
+    }
+
+    // Rate a spot
+    async function rateSpot(spotId, newRating) {
+        try {
+            if (!window.firebaseInstances) throw new Error('Firebase not initialized');
+            const { db, doc, getDoc, updateDoc } = window.firebaseInstances;
+            const spotRef = doc(db, 'spots', spotId);
+            const spotSnap = await getDoc(spotRef);
+            if (!spotSnap.exists()) throw new Error('Spot not found');
+            const spot = spotSnap.data();
+            const total = (spot.rating || 0) * (spot.ratingCount || 0);
+            const updatedCount = (spot.ratingCount || 0) + 1;
+            const updatedRating = (total + newRating) / updatedCount;
+            await updateDoc(spotRef, { rating: updatedRating, ratingCount: updatedCount });
+            showToast(`Thanks for rating! This spot now has ${updatedRating.toFixed(1)} stars`, 'info');
+        } catch (err) {
+            console.error('rateSpot error', err);
+            showToast('Failed to rate spot', 'error');
+        }
+    }
+
+    // Streak update utility after challenge completion
+    async function updateStreak(userId) {
+        try {
+            if (!window.firebaseInstances) return;
+            const { db, doc, getDoc, updateDoc } = window.firebaseInstances;
+            const userRef = doc(db, 'users', userId);
+            const userSnap = await getDoc(userRef);
+            const user = userSnap.exists() ? userSnap.data() : {};
+            const last = user.lastCompleted || 0;
+            const now = Date.now();
+            const oneDay = 86400000;
+            if (!last || (now - last) > oneDay) {
+                await updateDoc(userRef, { streak: 1, lastCompleted: now });
+            } else if ((now - last) <= oneDay) {
+                await updateDoc(userRef, { streak: (user.streak || 0) + 1, lastCompleted: now });
+            }
+        } catch (err) {
+            console.error('updateStreak error', err);
+        }
     }
 });

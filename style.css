@@ -13,3 +13,25 @@ header { text-align: center; margin: 1em 0; }
 .camera-controls button { margin: 0.5em; }
 .legal-content { max-height: 60vh; overflow-y: auto; }
 .user-location-marker { background: #d2673d; border-radius: 50%; width: 18px; height: 18px; border: 2px solid #fff; box-shadow: 0 0 4px #0006; }
+
+/* Toast styles */
+.toast {
+	position: fixed;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: #222;
+	color: #fff;
+	padding: 12px 20px;
+	border-radius: 8px;
+	font-size: 1rem;
+	z-index: 9999;
+	animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+	0% { opacity: 0; bottom: 10px; }
+	10% { opacity: 1; bottom: 20px; }
+	90% { opacity: 1; bottom: 20px; }
+	100% { opacity: 0; bottom: 10px; }
+}
