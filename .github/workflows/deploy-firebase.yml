@@ -1,0 +1,29 @@
+name: Deploy Firebase (functions & rules)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install functions deps
+        run: |
+          cd functions
+          npm ci
+
+      - name: Deploy functions & rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          npx firebase-tools deploy --only functions,firestore:rules --token "$FIREBASE_TOKEN"
