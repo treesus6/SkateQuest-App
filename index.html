@@ -44,6 +44,36 @@
                         <option value="gap">Gap</option>
                     </select>
 
+                    <!-- Challenge Panel -->
+                    <section id="challenge-panel" style="margin-top:1rem; padding:0.5rem; border-radius:8px; background:#fff;">
+                        <h2>Call-Out Trick Challenge</h2>
+                        <label for="spot-select">Select Spot:</label>
+                        <select id="spot-select">
+                            <option disabled data-placeholder selected>Choose a spot</option>
+                        </select>
+
+                        <label for="trick-select">Select Trick:</label>
+                        <select id="trick-select">
+                            <option disabled data-placeholder selected>Choose a trick</option>
+                        </select>
+
+                        <label for="challenge-title">Title (optional)</label>
+                        <input id="challenge-title" placeholder="Kickflip over bench" />
+
+                        <label for="challenge-desc">Description (optional)</label>
+                        <input id="challenge-desc" placeholder="Land a clean kickflip over the downtown bench" />
+
+                        <label for="challenge-xp">XP Reward</label>
+                        <input id="challenge-xp" type="number" min="0" value="50" />
+
+                        <label for="challenger-input">Challenger (user id)</label>
+                        <input id="challenger-input" placeholder="user id (defaults to signed-in)" />
+
+                        <div style="margin-top:0.5rem;">
+                          <button id="issue-challenge" style="background:#d2673d;color:#fff;padding:.5rem 1rem;border-radius:6px;border:none;">Issue Challenge</button>
+                        </div>
+                    </section>
+
                     <!-- Leaderboard -->
                     <section id="leaderboard"></section>
                 </section>
