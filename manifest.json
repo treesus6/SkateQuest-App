@@ -1,7 +1,7 @@
 {
   "name": "SkateQuest",
   "short_name": "SkateQuest",
-  "start_url": "./index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f5f0ea",
   "theme_color": "#d2673d",
