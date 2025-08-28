@@ -6,6 +6,8 @@
   from = "/*"
   to = "/index.html"
   status = 200
-  force = true
+  # Do not force index.html for every request; allow existing static files (JS, CSS, manifest)
+  # to be served with their correct MIME types. Netlify will fallback to index.html for
+  # navigation requests automatically when files are not found.
 
 # No build step needed — this is a plain static site. Netlify will serve files from the project root.

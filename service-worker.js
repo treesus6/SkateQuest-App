@@ -3,7 +3,13 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/style.css',
-  '/app.js'
+  '/main.js',
+  '/pwa.js',
+  '/manifest.json',
+  '/icons/skatequest-icon-192.png',
+  '/icons/skatequest-icon-512.png',
+  '/icons/skatequest-icon-192.svg',
+  '/icons/skatequest-icon-512.svg'
 ];
 
 // Cache essential files during service worker installation
