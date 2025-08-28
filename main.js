@@ -285,12 +285,28 @@ document.addEventListener('DOMContentLoaded', function() {
     if (heatToggle) heatToggle.addEventListener('change', (e) => { if (e.target.checked) renderHeatmap(); else if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; } });
 
     // Complete a challenge: award XP to a user
+    async function callCompleteChallengeFunction(challengeId) {
+        try {
+            if (!window.firebaseInstances || !window.firebaseInstances.functions || !window.firebaseInstances.httpsCallable) return null;
+            const fn = window.firebaseInstances.httpsCallable(window.firebaseInstances.functions, 'completeChallenge');
+            const res = await fn({ challengeId });
+            return res && res.data ? res.data : null;
+        } catch (e) { console.debug('callCompleteChallengeFunction failed', e); return null; }
+    }
+
     async function completeChallenge(challengeId, userId) {
         try {
             if (!window.firebaseInstances) throw new Error('Firebase not initialized');
             const { db, doc, getDoc, updateDoc, runTransaction } = window.firebaseInstances;
             const challengeRef = doc(db, 'challenges', challengeId);
             const userRef = doc(db, 'users', userId);
+            // Prefer server-side callable function if present (safer). If it fails, fallback to transactional client update.
+            const fnRes = await callCompleteChallengeFunction(challengeId).catch(()=>null);
+            if (fnRes && fnRes.success) {
+                showToast(`Challenge complete! You earned ${fnRes.xp || 0} XP 🛹`, 'info');
+                return;
+            }
+
             if (runTransaction) {
                 await runTransaction(db, async (tx) => {
                     const challengeSnap = await tx.get(challengeRef);
