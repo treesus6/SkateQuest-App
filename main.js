@@ -518,6 +518,55 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) { console.error('subscribePendingChallenges', e); }
     }
 
+    // Moderation queue: admin-only approve/reject
+    let moderationUnsub = null;
+    function subscribeModerationQueue(uid, isAdmin) {
+        try {
+            const modEl = document.getElementById('moderation-queue');
+            if (!modEl) return;
+            if (!isAdmin) { modEl.style.display = 'none'; return; }
+            modEl.style.display = 'block';
+            if (!window.firebaseInstances) return;
+            const { db, collection, query, where, orderBy, onSnapshot } = window.firebaseInstances;
+            const q = query(collection(db, 'challenges'), where('status', '==', 'pending'), orderBy('timestamp', 'desc'));
+            moderationUnsub = onSnapshot(q, snap => {
+                const list = document.getElementById('moderation-queue-list');
+                if (!list) return;
+                list.innerHTML = '';
+                if (snap.empty) { list.textContent = 'No items for moderation'; return; }
+                snap.forEach(ch => {
+                    const data = ch.data();
+                    const row = document.createElement('div');
+                    row.className = 'pending-row';
+                    const txt = document.createElement('div');
+                    txt.innerHTML = `<strong>${data.title || 'Challenge'}</strong><div style="font-size:.9rem;color:#444">${data.description || ''}</div><div style="font-size:.85rem;color:#666">XP: ${data.xp || 0} • Spot: ${data.spotId || ''}</div>`;
+                    const approve = document.createElement('button'); approve.textContent = 'Approve'; approve.style.marginLeft = '.6rem';
+                    const reject = document.createElement('button'); reject.textContent = 'Reject'; reject.style.marginLeft = '.4rem'; reject.style.background = '#c44';
+                    approve.addEventListener('click', async () => {
+                        try {
+                            // call adminApproveChallenge
+                            if (window.firebaseInstances && window.firebaseInstances.httpsCallable && window.firebaseInstances.functions) {
+                                const fn = window.firebaseInstances.httpsCallable(window.firebaseInstances.functions, 'adminApproveChallenge');
+                                await fn({ challengeId: ch.id });
+                                showToast('Approved and XP awarded', 'info');
+                            }
+                        } catch (e) { console.error('approve failed', e); showToast('Approve failed', 'error'); }
+                    });
+                    reject.addEventListener('click', async () => {
+                        try {
+                            // simply mark as cancelled
+                            const ref = window.firebaseInstances.doc(window.firebaseInstances.db, 'challenges', ch.id);
+                            await window.firebaseInstances.updateDoc(ref, { status: 'cancelled', moderatedBy: uid });
+                            showToast('Challenge rejected', 'info');
+                        } catch (e) { console.error('reject failed', e); showToast('Reject failed', 'error'); }
+                    });
+                    row.appendChild(txt); row.appendChild(approve); row.appendChild(reject);
+                    list.appendChild(row);
+                });
+            }, err => console.error('moderation onSnapshot', err));
+        } catch (e) { console.error('subscribeModerationQueue', e); }
+    }
+
     // Rate a spot
     async function rateSpot(spotId, newRating) {
         try {
@@ -578,6 +627,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     subscribeLeaderboardRealtime();
                     subscribeCurrentUserRealtime(user.uid);
                     subscribePendingChallenges();
+                    // check for admin claim
+                    (async () => {
+                        try {
+                            const tokenRes = await window.firebaseInstances.auth.currentUser.getIdTokenResult(true);
+                            const isAdmin = !!(tokenRes && tokenRes.claims && tokenRes.claims.admin);
+                            // wire moderation queue if admin
+                            subscribeModerationQueue(user.uid, isAdmin);
+                        } catch (e) { console.debug('token claim check failed', e); subscribeModerationQueue(user.uid, false); }
+                    })();
                 }
             });
         }
