@@ -1,0 +1,32 @@
+// Suggested Firestore rules for SkateQuest (local copy - adapt to your DB structure)
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // Clients may update profile fields but not xp or badges directly
+      allow update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['displayName','photoURL','lastCompleted','streak']);
+    }
+
+    match /challenges/{challengeId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      // Prevent clients from arbitrarily setting status to 'complete' unless they are the creator
+      allow update: if request.auth != null && request.auth.uid == resource.data.createdBy && request.resource.data.status in ['complete','cancelled'];
+    }
+
+    // Spots and other collections
+    match /spots/{spotId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth.token.admin == true;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

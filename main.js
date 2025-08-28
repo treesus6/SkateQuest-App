@@ -193,7 +193,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast('Challenge created', 'info');
                     // show confirmation and link
                     const conf = document.getElementById('challenge-confirm');
-                    if (conf) conf.innerHTML = `Created: <code>${docRef.id}</code>`;
+                    if (conf) {
+                        conf.innerHTML = `Created: <code>${docRef.id}</code>`;
+                        // store the created challenge id so the Mark Complete button can find it
+                        conf.dataset.challengeId = docRef.id;
+                    }
                     // if expiresAt present, render timer
                     if (payload.expiresAt) renderChallengeTimer(payload.expiresAt);
                     // Refresh leaderboard after XP-impacting events
@@ -284,18 +288,70 @@ document.addEventListener('DOMContentLoaded', function() {
     async function completeChallenge(challengeId, userId) {
         try {
             if (!window.firebaseInstances) throw new Error('Firebase not initialized');
-            const { db, doc, getDoc, updateDoc } = window.firebaseInstances;
+            const { db, doc, getDoc, updateDoc, runTransaction } = window.firebaseInstances;
             const challengeRef = doc(db, 'challenges', challengeId);
-            const challengeSnap = await getDoc(challengeRef);
-            if (!challengeSnap.exists()) throw new Error('Challenge not found');
-            const xpEarned = (challengeSnap.data() && challengeSnap.data().xp) || 0;
             const userRef = doc(db, 'users', userId);
-            await updateDoc(userRef, { xp: window.firebaseInstances.increment ? window.firebaseInstances.increment(xpEarned) : xpEarned });
-            showToast(`Challenge complete! You earned ${xpEarned} XP 🛹`, 'info');
+            if (runTransaction) {
+                await runTransaction(db, async (tx) => {
+                    const challengeSnap = await tx.get(challengeRef);
+                    if (!challengeSnap.exists()) throw new Error('Challenge not found');
+                    const xpEarned = (challengeSnap.data() && challengeSnap.data().xp) || 0;
+                    tx.update(userRef, { xp: window.firebaseInstances.increment ? window.firebaseInstances.increment(xpEarned) : xpEarned });
+                    const extra = {};
+                    try { if (window.firebaseInstances.serverTimestamp) extra.completedAt = window.firebaseInstances.serverTimestamp(); } catch (e) {}
+                    tx.update(challengeRef, { status: 'complete', completedBy: userId, ...extra });
+                    // keep message outside tx
+                });
+                // best-effort: fetch xp value to display
+                const cSnap = await getDoc(challengeRef);
+                const xpEarned = (cSnap.exists() && cSnap.data() && cSnap.data().xp) || 0;
+                showToast(`Challenge complete! You earned ${xpEarned} XP 🛹`, 'info');
+            } else {
+                // fallback sequential update
+                const challengeSnap = await getDoc(challengeRef);
+                if (!challengeSnap.exists()) throw new Error('Challenge not found');
+                const xpEarned = (challengeSnap.data() && challengeSnap.data().xp) || 0;
+                await updateDoc(userRef, { xp: window.firebaseInstances.increment ? window.firebaseInstances.increment(xpEarned) : xpEarned });
+                const extra = {};
+                try { if (window.firebaseInstances.serverTimestamp) extra.completedAt = window.firebaseInstances.serverTimestamp(); } catch (e) {}
+                await updateDoc(challengeRef, { status: 'complete', completedBy: userId, ...extra });
+                showToast(`Challenge complete! You earned ${xpEarned} XP 🛹`, 'info');
+            }
         } catch (err) {
             console.error('completeChallenge error', err);
             showToast('Failed to complete challenge', 'error');
         }
+    }
+
+    // Wire the Mark Complete button to the last-created challenge (if available) and current user
+    const completeBtn = document.getElementById('complete-challenge-btn');
+    if (completeBtn) {
+        completeBtn.addEventListener('click', async () => {
+            const conf = document.getElementById('challenge-confirm');
+            if (!conf || !conf.dataset || !conf.dataset.challengeId) return alert('No challenge selected or challenge not created from this device.');
+            const challengeId = conf.dataset.challengeId;
+            try {
+                if (!window.firebaseInstances || !window.firebaseInstances.auth || !window.firebaseInstances.auth.currentUser) {
+                    // try to sign in anonymously to acquire a user id
+                    if (window.firebaseInstances && window.firebaseInstances.signInAnonymously) {
+                        await window.firebaseInstances.signInAnonymously(window.firebaseInstances.auth).catch(()=>{});
+                    }
+                }
+                const userId = (window.firebaseInstances && window.firebaseInstances.auth && window.firebaseInstances.auth.currentUser) ? window.firebaseInstances.auth.currentUser.uid : null;
+                if (!userId) return alert('You must be signed in to complete a challenge.');
+                await completeChallenge(challengeId, userId);
+                await updateStreak(userId);
+                // fetch latest user doc then check badges
+                if (window.firebaseInstances && window.firebaseInstances.getDoc && window.firebaseInstances.doc) {
+                    const uRef = window.firebaseInstances.doc(window.firebaseInstances.db, 'users', userId);
+                    const uSnap = await window.firebaseInstances.getDoc(uRef);
+                    const uData = uSnap.exists() ? uSnap.data() : {};
+                    await checkAndAwardBadges(userId, uData);
+                }
+                // refresh leaderboard
+                renderLeaderboard();
+            } catch (e) { console.error('complete button handler', e); showToast('Failed to mark challenge complete', 'error'); }
+        });
     }
 
     // Spot filter UI wiring
@@ -332,20 +388,118 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             if (!window.firebaseInstances) return;
             const { db, collection, getDocs, query, orderBy, limit } = window.firebaseInstances;
-            const leaderboardEl = document.getElementById('leaderboard');
-            if (!leaderboardEl) return;
-            leaderboardEl.innerHTML = '<h2>Top Skaters</h2>';
+            const listEl = document.getElementById('leaderboard-list');
+            if (!listEl) return;
+            listEl.innerHTML = '';
             const q = query(collection(db, 'users'), orderBy('xp', 'desc'), limit(10));
             const snaps = await getDocs(q);
             snaps.forEach(docSnap => {
                 const user = docSnap.data();
                 const entry = document.createElement('div');
                 entry.textContent = `${user.displayName || docSnap.id}: ${user.xp || 0} XP`;
-                leaderboardEl.appendChild(entry);
+                listEl.appendChild(entry);
             });
         } catch (err) {
             console.error('renderLeaderboard error', err);
         }
+    }
+
+    // Real-time subscriptions (use when auth is initialized)
+    let leaderboardUnsub = null;
+    let userUnsub = null;
+    function subscribeLeaderboardRealtime() {
+        try {
+            if (!window.firebaseInstances) return;
+            const { db, collection, query, orderBy, limit, onSnapshot } = window.firebaseInstances;
+            const q = query(collection(db, 'users'), orderBy('xp', 'desc'), limit(10));
+            leaderboardUnsub = onSnapshot(q, snapshot => {
+                const listEl = document.getElementById('leaderboard-list');
+                if (!listEl) return;
+                listEl.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const user = docSnap.data();
+                    const entry = document.createElement('div');
+                    entry.textContent = `${user.displayName || docSnap.id}: ${user.xp || 0} XP`;
+                    listEl.appendChild(entry);
+                });
+            }, err => console.error('leaderboard onSnapshot error', err));
+        } catch (e) { console.error('subscribeLeaderboardRealtime', e); }
+    }
+
+    function subscribeCurrentUserRealtime(uid) {
+        try {
+            if (!window.firebaseInstances) return;
+            const { db, doc, onSnapshot } = window.firebaseInstances;
+            const userRef = doc(db, 'users', uid);
+            userUnsub = onSnapshot(userRef, snap => {
+                const data = snap.exists() ? snap.data() : {};
+                // update streak display
+                const sd = document.getElementById('streak-display');
+                if (sd) sd.textContent = `Streak: ${data.streak || 0} • XP: ${data.xp || 0}`;
+                renderBadges(data.badges || {});
+            }, err => console.error('user onSnapshot error', err));
+        } catch (e) { console.error('subscribeCurrentUserRealtime', e); }
+    }
+
+    // Pending challenges realtime list and per-item complete button
+    let pendingUnsub = null;
+    function subscribePendingChallenges() {
+        try {
+            if (!window.firebaseInstances) return;
+            const { db, collection, query, where, orderBy, onSnapshot } = window.firebaseInstances;
+            // show open/pending challenges
+            const q = query(collection(db, 'challenges'), where('status', '==', 'pending'), orderBy('timestamp', 'desc'));
+            pendingUnsub = onSnapshot(q, snap => {
+                const list = document.getElementById('pending-challenges-list');
+                if (!list) return;
+                list.innerHTML = '';
+                if (snap.empty) { list.textContent = 'No pending challenges'; return; }
+                snap.forEach(ch => {
+                    const data = ch.data();
+                    const row = document.createElement('div');
+                    row.className = 'pending-row';
+                    const txt = document.createElement('div');
+                    txt.innerHTML = `<strong>${data.title || 'Challenge'}</strong><div style="font-size:.9rem;color:#444">${data.description || ''}</div><div style="font-size:.85rem;color:#666">XP: ${data.xp || 0} • Spot: ${data.spotId || ''}</div>`;
+                    const btn = document.createElement('button');
+                    btn.textContent = 'Complete';
+                    btn.style.marginLeft = '0.6rem';
+                    btn.addEventListener('click', async () => {
+                        try {
+                            // open confirmation modal instead of immediate action
+                            const modal = document.getElementById('customModal');
+                            const modalText = document.getElementById('modalText');
+                            const modalTitle = document.getElementById('modalTitle');
+                            if (modal && modalText && modalTitle) {
+                                modalTitle.textContent = 'Complete Challenge?';
+                                modalText.innerHTML = `<strong>${data.title || 'Challenge'}</strong><br/>${(data.description || '')}<br/><small>XP: ${data.xp || 0} • Spot: ${data.spotId || ''}</small>`;
+                                modal.hidden = false; modal.style.display = 'block';
+                                // store action to run on confirm
+                                window.__pendingConfirmAction = async () => {
+                                    try {
+                                        // ensure user signed-in
+                                        if (!window.firebaseInstances.auth.currentUser && window.firebaseInstances.signInAnonymously) {
+                                            await window.firebaseInstances.signInAnonymously(window.firebaseInstances.auth).catch(()=>{});
+                                        }
+                                        const uid = (window.firebaseInstances.auth && window.firebaseInstances.auth.currentUser) ? window.firebaseInstances.auth.currentUser.uid : null;
+                                        if (!uid) { alert('Sign in required to complete challenge'); return; }
+                                        await completeChallenge(ch.id, uid);
+                                        await updateStreak(uid);
+                                        const uRef = window.firebaseInstances.doc(window.firebaseInstances.db, 'users', uid);
+                                        const uSnap = await window.firebaseInstances.getDoc(uRef);
+                                        const uData = uSnap.exists() ? uSnap.data() : {};
+                                        await checkAndAwardBadges(uid, uData);
+                                        showToast('Challenge completed', 'info');
+                                    } catch (e) { console.error('confirm complete', e); showToast('Failed to complete challenge', 'error'); }
+                                };
+                            }
+                        } catch (e) { console.error('pending complete', e); showToast('Failed to open confirm', 'error'); }
+                    });
+                    row.appendChild(txt);
+                    row.appendChild(btn);
+                    list.appendChild(row);
+                });
+            }, err => console.error('pending challenges onSnapshot', err));
+        } catch (e) { console.error('subscribePendingChallenges', e); }
     }
 
     // Rate a spot
@@ -388,4 +542,45 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('updateStreak error', err);
         }
     }
+
+    // Ensure we initialize auth and realtime subscriptions
+    try {
+        if (window.firebaseInstances && window.firebaseInstances.onAuthStateChanged && window.firebaseInstances.auth) {
+            // attempt a sign-in if no current user
+            try {
+                if (!window.firebaseInstances.auth.currentUser && window.firebaseInstances.signInAnonymously) {
+                    window.firebaseInstances.signInAnonymously(window.firebaseInstances.auth).catch(e => { console.debug('anonymous sign-in failed', e); });
+                }
+            } catch (e) { console.debug('signInAnonymously check failed', e); }
+
+            window.firebaseInstances.onAuthStateChanged(window.firebaseInstances.auth, (user) => {
+                // unsubscribe existing listeners
+                try { if (leaderboardUnsub) leaderboardUnsub(); leaderboardUnsub = null; } catch (e) {}
+                try { if (userUnsub) userUnsub(); userUnsub = null; } catch (e) {}
+                try { if (pendingUnsub) pendingUnsub(); pendingUnsub = null; } catch (e) {}
+                if (user && user.uid) {
+                    subscribeLeaderboardRealtime();
+                    subscribeCurrentUserRealtime(user.uid);
+                    subscribePendingChallenges();
+                }
+            });
+        }
+    } catch (e) { console.error('auth init failed', e); }
+
+    // Modal wiring: confirm/cancel
+    try {
+        const modal = document.getElementById('customModal');
+        const modalClose = modal ? modal.querySelector('.close-button') : null;
+        const modalCancel = document.getElementById('modalCancel');
+        const modalConfirm = document.getElementById('modalConfirm');
+        function closeModal() { if (modal) { modal.hidden = true; modal.style.display = 'none'; window.__pendingConfirmAction = null; } }
+        if (modalClose) modalClose.addEventListener('click', closeModal);
+        if (modalCancel) modalCancel.addEventListener('click', closeModal);
+        if (modalConfirm) modalConfirm.addEventListener('click', async () => {
+            if (window.__pendingConfirmAction) {
+                try { await window.__pendingConfirmAction(); } catch (e) { console.error('modal action failed', e); }
+            }
+            closeModal();
+        });
+    } catch (e) { console.error('modal wiring failed', e); }
 });

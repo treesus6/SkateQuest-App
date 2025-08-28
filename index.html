@@ -72,14 +72,23 @@
                         <div style="margin-top:0.5rem;">
                           <button id="issue-challenge" style="background:#d2673d;color:#fff;padding:.5rem 1rem;border-radius:6px;border:none;">Issue Challenge</button>
                         </div>
-                        <div id="challenge-confirm" style="margin-top:.5rem;font-size:.9rem;color:#222"></div>
-                        <div id="challenge-timer" class="panel" style="display:none;margin-top:.5rem;color:#fff;"></div>
+                                                <div id="challenge-confirm" style="margin-top:.5rem;font-size:.9rem;color:#222"></div>
+                                                <div style="margin-top:.5rem;">
+                                                    <button id="complete-challenge-btn" style="background:#2a8f2a;color:#fff;padding:.4rem .8rem;border-radius:6px;border:none;">Mark Complete</button>
+                                                </div>
+                                                <div id="challenge-timer" class="panel" style="display:none;margin-top:.5rem;color:#fff;"></div>
                     </section>
 
                                         <!-- Leaderboard -->
                                         <section id="leaderboard" class="panel">
                                             <h2>Top Skaters</h2>
                                             <div id="leaderboard-list"></div>
+                                        </section>
+
+                                        <!-- Pending challenges (real-time list) -->
+                                        <section id="pending-challenges" class="panel" style="margin-top:1rem;">
+                                            <h3>Pending Challenges</h3>
+                                            <div id="pending-challenges-list">Loading…</div>
                                         </section>
 
                                         <!-- Streak display -->
@@ -110,22 +119,29 @@
         </div>
 
         <!-- Modals -->
-        <div id="customModal" class="modal" hidden>
-            <div class="modal-content">
-                <button class="close-button">×</button>
-                <p id="modalText"></p>
+            <div id="customModal" class="modal" hidden>
+                <div class="modal-content">
+                    <button class="close-button">×</button>
+                    <h3 id="modalTitle">Confirm action</h3>
+                    <p id="modalText"></p>
+                    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem;">
+                        <button id="modalCancel" style="background:#aaa;color:#fff;padding:.4rem .8rem;border-radius:6px;border:none;">Cancel</button>
+                        <button id="modalConfirm" style="background:#2a8f2a;color:#fff;padding:.4rem .8rem;border-radius:6px;border:none;">Confirm</button>
+                    </div>
+                </div>
             </div>
-        </div>
 
     <!-- Leaflet JS (no SRI) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet heatmap plugin -->
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
         <!-- Firebase SDK -->
         <script type="module">
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
             import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
             import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-            import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+            import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
             import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
             const firebaseConfig = {
@@ -144,7 +160,7 @@
             const auth = getAuth(app);
             const storage = getStorage(app);
 
-            window.firebaseInstances = { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged };
+            window.firebaseInstances = { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged };
         </script>
 
         <!-- App JS -->

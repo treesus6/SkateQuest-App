@@ -50,3 +50,22 @@ If you want I can:
 - Prepare a GitHub repo for you (you'll need to provide access or do the push yourself).
 - Walk through the Netlify Connect-from-Git flow step-by-step while you do the clicks.
 - Configure environment variables in Netlify for any secrets.
+
+---
+
+Quick local test for the new gameplay UI (pending challenges & completion):
+
+1) Serve the project locally (PowerShell):
+
+```powershell
+cd "C:\Users\treev\OneDrive\Apps\Desktop\skateguest-deploy\skatequest-deploy 1"
+python -m http.server 8000
+# then open http://localhost:8000 in a browser
+```
+
+2) Open the app in the browser, open DevTools -> Console to watch logs.
+3) Use the Challenge panel to create an issue (Issue Challenge).
+4) In the Pending Challenges panel, click Complete for the new challenge.
+5) Verify XP and streak updates, badges, and leaderboard changes.
+
+If you want, I can push these edits to the repo and trigger a Netlify deploy. Say "push and deploy" and I'll make the commit and push.

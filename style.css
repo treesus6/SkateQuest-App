@@ -30,10 +30,11 @@ header { text-align: center; margin: 1em 0; }
 }
 
 .panel {
-	background: #111;
-	color: #fff;
+	background: #fff;
+	color: #111;
 	padding: 1rem;
 	border-radius: 8px;
+	box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 #leaderboard-list div {
@@ -43,6 +44,14 @@ header { text-align: center; margin: 1em 0; }
 
 .badges { display:flex; gap:0.5rem; flex-wrap:wrap; }
 .badges div { background:#fff3; color:#fff; padding:.4rem .6rem; border-radius:6px; }
+
+/* Pending challenges list */
+#pending-challenges-list { display:flex; flex-direction:column; gap:0.6rem; }
+.pending-row { display:flex; justify-content:space-between; align-items:center; background:#f7f7f7; padding:.6rem; border-radius:6px; border:1px solid #eee; }
+.pending-row button { background:#2a8f2a; color:#fff; border:none; padding:.4rem .6rem; border-radius:6px; cursor:pointer; }
+.pending-row button:hover { background:#227422; }
+
+.toast { position: fixed; bottom: 20px; right: 20px; left: auto; transform: none; }
 
 .heatmap-toggle { margin-top:0.5rem; color:#fff; }
 
