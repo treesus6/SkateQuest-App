@@ -41,4 +41,45 @@ document.addEventListener('DOMContentLoaded', function() {
     populateSelect('/tricks', trickSelect, 'name');
 
     // ...existing code can hook up challenge issuance, form handling, etc.
+    // Issue challenge button handler: create a challenge in Firestore if possible, otherwise POST to API
+    if (issueChallengeButton) {
+        issueChallengeButton.addEventListener('click', async () => {
+            const spotId = spotSelect && spotSelect.value;
+            const trickId = trickSelect && trickSelect.value;
+            const challenger = challengerInput && challengerInput.value && challengerInput.value.trim();
+            if (!spotId || !trickId || !challenger) {
+                alert('Please select a spot, select a trick, and enter a challenger ID.');
+                return;
+            }
+            issueChallengeButton.disabled = true;
+            try {
+                // Prefer Firestore if firebaseInstances are ready
+                if (window.firebaseInstances && window.firebaseInstances.addDoc && window.firebaseInstances.collection) {
+                    const { db, addDoc, collection, serverTimestamp } = window.firebaseInstances;
+                    const payload = {
+                        spotId,
+                        trick: trickId,
+                        challengerId: challenger,
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    };
+                    const docRef = await addDoc(collection(db, 'challenges'), payload);
+                    alert('Challenge created (id: ' + (docRef && docRef.id ? docRef.id : 'unknown') + ')');
+                } else {
+                    // Fallback to POSTing to API
+                    await apiFetch('/challenges', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ spotId, trickId, challenger })
+                    });
+                    alert('Challenge created via API');
+                }
+            } catch (err) {
+                console.error('Failed to create challenge', err);
+                alert('Failed to create challenge: ' + (err && err.message ? err.message : 'unknown error'));
+            } finally {
+                issueChallengeButton.disabled = false;
+            }
+        });
+    }
 });
