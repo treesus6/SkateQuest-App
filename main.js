@@ -5,6 +5,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const trickSelect = document.getElementById('trick-select');
     const challengerInput = document.getElementById('challenger-input');
     const issueChallengeButton = document.getElementById('issue-challenge');
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+
+const db = getFirestore();
+const storage = getStorage();
+
+async function uploadProof() {
+  const file = document.getElementById("proofFile").files[0];
+  const userId = "YOUR_USER_ID"; // Replace with actual user ID logic
+  const challengeId = "YOUR_CHALLENGE_ID"; // Replace with actual challenge ID
+
+  if (!file) return alert("No file selected");
+
+  const storageRef = ref(storage, `proofs/${userId}/${challengeId}`);
+  await uploadBytes(storageRef, file);
+  const mediaUrl = await getDownloadURL(storageRef);
+
+  const proofRef = doc(db, `challenges/${challengeId}/proofs/${userId}`);
+  await setDoc(proofRef, {
+    mediaUrl,
+    timestamp: Date.now(),
+    verifiedBy: []
+  });
+
+  alert("Proof uploaded!");
+}
+
     
     // Populate the dropdown boxes with suitable spots to upload
     // Small API helper. Use relative endpoints like '/spots' or pass a full URL.
@@ -599,4 +626,5 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModal();
         });
     } catch (e) { console.error('modal wiring failed', e); }
+
 });
