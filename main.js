@@ -715,10 +715,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.map && data.location) {
                     const marker = L.marker([data.location.lat, data.location.lng])
                         .bindPopup(`
-                            <strong>${data.userName}</strong><br>
-                            ${data.trickName} at ${data.spotName}<br>
-                            <img src="${data.mediaUrl}" style="max-width:150px; border-radius:4px;">
-                        `)
+                            <div class="challenge-popup" style="text-align:center;">
+                                <h3 style="margin:0 0 5px 0;">${data.userName}</h3>
+                                <p style="margin:0 0 10px 0;">
+                                    <strong>${data.trickName}</strong><br>
+                                    at ${data.spotName}
+                                </p>
+                                <img src="${data.mediaUrl}" style="max-width:200px; border-radius:8px; margin:5px 0;">
+                                <p style="margin:5px 0 0 0; color:#666;">
+                                    ✨ ${data.verifiedBy.length} verifications
+                                </p>
+                            </div>
+                        `, {
+                            maxWidth: 250,
+                            className: 'challenge-popup'
+                        })
                         .addTo(window.map);
                     window.challengeMarkers.push(marker);
                 }
