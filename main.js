@@ -763,17 +763,26 @@ document.addEventListener('DOMContentLoaded', function() {
         return 'just now';
     }
 
-    // Function to center map on a spot
+    // Function to center map on a spot with smooth animation
     window.showOnMap = function(lat, lng) {
         if (window.map && lat && lng) {
-            window.map.setView([lat, lng], 16);
+            // Smooth pan to the location
+            window.map.flyTo([lat, lng], 16, {
+                duration: 1.5,
+                easeLinearity: 0.25
+            });
+
             // Find and open the corresponding marker popup
             window.challengeMarkers?.forEach(marker => {
                 const markerLatLng = marker.getLatLng();
                 if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
-                    marker.openPopup();
+                    // Slight delay to open popup after animation
+                    setTimeout(() => marker.openPopup(), 1500);
                 }
             });
+
+            // Visual feedback
+            showToast("📍 Showing spot location", "info");
         }
     };
         } catch (error) {
