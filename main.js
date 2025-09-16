@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Populate the dropdown boxes with suitable spots to upload
     // Small API helper. Use relative endpoints like '/spots' or pass a full URL.
-    async function apiFetch(endpoint, options) {
+    const apiFetch = async (endpoint, options) => {
         const base = 'https://api.skatequest.app/v1';
         const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
         // Attach Firebase auth token when available
@@ -36,10 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const res = await fetch(url, { ...(options || {}), headers });
         if (!res.ok) throw new Error(`API request failed: ${res.status} ${res.statusText}`);
         return res.json();
-    }
+    };
 
     // Helper to populate a <select> with items from an API
-    async function populateSelect(endpointOrUrl, selectEl, textKey = 'name') {
+    const populateSelect = async (endpointOrUrl, selectEl, textKey = 'name') => {
         if (!selectEl) return;
         // show loading state
         selectEl.disabled = true;
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Tiny toast helper for transient messages
-    function showToast(message, type = 'info', ttl = 3500) {
+    const showToast = (message, type = 'info', ttl = 3500) => {
         let container = document.getElementById('toast-container');
         if (!container) {
             container = document.createElement('div');
@@ -107,8 +107,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Populate both selects in parallel using short endpoints
-    populateSelect('/spots', spotSelect, 'name');
-    populateSelect('/tricks', trickSelect, 'name');
+    Promise.all([
+        populateSelect('/spots', spotSelect, 'name'),
+        populateSelect('/tricks', trickSelect, 'name')
+    ]).catch(err => console.error('Failed to populate selects:', err));
 
     // Render leaderboard on load
     renderLeaderboard();
@@ -785,14 +787,9 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast("📍 Showing spot location", "info");
         }
     };
-        } catch (error) {
-            console.error("Error loading challenge feed:", error);
-            showToast("Failed to load challenge feed", "error");
-        }
-    }
 
     // Initialize the feed with test data if empty
-    async function initializeTestData() {
+    const initializeTestData = async () => {
         const snapshot = await getDocs(collectionGroup(db, 'proofs'));
         if (snapshot.empty) {
             // Add some test challenges
@@ -867,5 +864,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
     }
-
 });
