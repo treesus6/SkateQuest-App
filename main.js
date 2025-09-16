@@ -1,33 +1,17 @@
 // main.js
 import './Untitled-2.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirestore, doc, setDoc, collectionGroup, getDocs } from "firebase/firestore";
+
+// Initialize Firebase services
+const db = getFirestore();
+const storage = getStorage();
+
 document.addEventListener('DOMContentLoaded', function() {
     const spotSelect = document.getElementById('spot-select');
     const trickSelect = document.getElementById('trick-select');
     const challengerInput = document.getElementById('challenger-input');
     const issueChallengeButton = document.getElementById('issue-challenge');
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-
-const db = getFirestore();
-const storage = getStorage();
-
-async function uploadProof() {
-  const file = document.getElementById("proofFile").files[0];
-  const userId = "YOUR_USER_ID"; // Replace with actual user ID logic
-  const challengeId = "YOUR_CHALLENGE_ID"; // Replace with actual challenge ID
-
-  if (!file) return alert("No file selected");
-
-  const storageRef = ref(storage, `proofs/${userId}/${challengeId}`);
-  await uploadBytes(storageRef, file);
-  const mediaUrl = await getDownloadURL(storageRef);
-
-  const proofRef = doc(db, `challenges/${challengeId}/proofs/${userId}`);
-  await setDoc(proofRef, {
-    mediaUrl,
-    timestamp: Date.now(),
-    verifiedBy: []
-  });
 
   alert("Proof uploaded!");
 }
@@ -626,5 +610,192 @@ async function uploadProof() {
             closeModal();
         });
     } catch (e) { console.error('modal wiring failed', e); }
+
+    // Upload proof functionality
+    async function uploadProof() {
+        const file = document.getElementById("proofFile").files[0];
+        const activeChallenge = window.activeChallenge || {};
+        const userId = window.currentUser?.uid; // Get from your auth system
+        const challengeId = activeChallenge.id;
+
+        if (!file) {
+            showToast("Please select a file first", "error");
+            return;
+        }
+
+        if (!userId || !challengeId) {
+            showToast("Please select a challenge first", "error");
+            return;
+        }
+
+        try {
+            // Get current location
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject);
+            });
+
+            const storageRef = ref(storage, `proofs/${userId}/${challengeId}`);
+            await uploadBytes(storageRef, file);
+            const mediaUrl = await getDownloadURL(storageRef);
+
+            const proofRef = doc(db, `challenges/${challengeId}/proofs/${userId}`);
+            await setDoc(proofRef, {
+                mediaUrl,
+                timestamp: Date.now(),
+                verifiedBy: [],
+                location: {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                },
+                spotName: activeChallenge.spotName || 'Unknown Spot',
+                trickName: activeChallenge.trickName || 'Mystery Trick',
+                userName: window.currentUser?.displayName || 'Anonymous Skater'
+            });
+
+            showToast("Proof uploaded successfully!", "success");
+            await loadChallengeFeed(); // Refresh the feed
+            ratReact("challengeComplete"); // Make the rat happy
+        } catch (error) {
+            console.error("Error uploading proof:", error);
+            showToast("Failed to upload proof", "error");
+        }
+    }
+
+    // Challenge feed functionality
+    async function loadChallengeFeed() {
+        try {
+            const snapshot = await getDocs(collectionGroup(db, 'proofs'));
+            const feed = document.getElementById("challenge-feed");
+            feed.innerHTML = "<h2>Global Challenge Feed 🌍</h2>";
+
+            // Clear existing challenge markers
+            if (window.challengeMarkers) {
+                window.challengeMarkers.forEach(marker => marker.remove());
+            }
+            window.challengeMarkers = [];
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const card = document.createElement("div");
+                card.className = "challenge-card";
+                
+                // Calculate time ago
+                const timeAgo = getTimeAgo(data.timestamp);
+                
+                // Add card content
+                card.innerHTML = `
+                    <div class="challenge-header">
+                        <strong>${data.userName}</strong> at <strong>${data.spotName}</strong>
+                    </div>
+                    <img src="${data.mediaUrl}" alt="Challenge proof" style="max-width:100%; border-radius:4px;">
+                    <div class="challenge-info">
+                        <p class="trick-name">🛹 ${data.trickName}</p>
+                        <p>✨ Verified by: ${data.verifiedBy.length} skaters</p>
+                        <p>🕒 ${timeAgo}</p>
+                        <button onclick="showOnMap(${data.location?.lat}, ${data.location?.lng})" class="location-btn">
+                            📍 Show on map
+                        </button>
+                    </div>
+                `;
+                feed.appendChild(card);
+
+                // Add marker to map if location exists
+                if (window.map && data.location) {
+                    const marker = L.marker([data.location.lat, data.location.lng])
+                        .bindPopup(`
+                            <strong>${data.userName}</strong><br>
+                            ${data.trickName} at ${data.spotName}<br>
+                            <img src="${data.mediaUrl}" style="max-width:150px; border-radius:4px;">
+                        `)
+                        .addTo(window.map);
+                    window.challengeMarkers.push(marker);
+                }
+            });
+        } catch (error) {
+            console.error("Error loading challenge feed:", error);
+            showToast("Failed to load challenge feed", "error");
+        }
+    }
+
+    // Helper function to show time ago
+    function getTimeAgo(timestamp) {
+        const seconds = Math.floor((Date.now() - timestamp) / 1000);
+        
+        const intervals = {
+            year: 31536000,
+            month: 2592000,
+            week: 604800,
+            day: 86400,
+            hour: 3600,
+            minute: 60
+        };
+        
+        for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+            const interval = Math.floor(seconds / secondsInUnit);
+            if (interval >= 1) {
+                return interval === 1 ? `1 ${unit} ago` : `${interval} ${unit}s ago`;
+            }
+        }
+        
+        return 'just now';
+    }
+
+    // Function to center map on a spot
+    window.showOnMap = function(lat, lng) {
+        if (window.map && lat && lng) {
+            window.map.setView([lat, lng], 16);
+            // Find and open the corresponding marker popup
+            window.challengeMarkers?.forEach(marker => {
+                const markerLatLng = marker.getLatLng();
+                if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
+                    marker.openPopup();
+                }
+            });
+        }
+    };
+        } catch (error) {
+            console.error("Error loading challenge feed:", error);
+            showToast("Failed to load challenge feed", "error");
+        }
+    }
+
+    // Initialize the feed
+    loadChallengeFeed().catch(console.error);
+
+    // Skate Rat functionality
+    if (window.map) { // Check if map is initialized
+        const ratIcon = L.icon({
+            iconUrl: 'icons/skatequest-icon-192.png', // Using app icon as placeholder
+            iconSize: [32, 32]
+        });
+
+        const userLocation = window.userLocation || [0, 0];
+        const ratMarker = L.marker(userLocation, { icon: ratIcon }).addTo(window.map);
+
+        window.updateRatPosition = function(newLocation) {
+            ratMarker.setLatLng(newLocation);
+        };
+
+        window.ratReact = function(event) {
+            if (event === "challengeComplete") {
+                // Animate the rat (for now just bounce the marker)
+                const originalPos = ratMarker.getLatLng();
+                const bounceHeight = 0.0001; // Small coordinate difference for bounce
+
+                let bounceCount = 0;
+                const bounceInterval = setInterval(() => {
+                    if (bounceCount >= 6) { // 3 full bounces
+                        clearInterval(bounceInterval);
+                        ratMarker.setLatLng(originalPos);
+                        return;
+                    }
+
+                    const newLat = originalPos.lat + (bounceCount % 2 === 0 ? bounceHeight : 0);
+                    ratMarker.setLatLng([newLat, originalPos.lng]);
+                    bounceCount++;
+                }, 100);
+            }
+        };
+    }
 
 });

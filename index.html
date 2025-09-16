@@ -16,12 +16,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icons/skatequest-icon-192.png">
     </head>
-    <body<div id="proof-upload">
-  <input type="file" id="proofFile" />
-  <button onclick="uploadProof()">Upload Proof</button>
-</div>
-
-    >
+    <body>
         <header>
             <h1>SkateQuest 🛹</h1>
         </header>
@@ -48,6 +43,19 @@
                         <option value="rail">Rail</option>
                         <option value="gap">Gap</option>
                     </select>
+
+                    <!-- Proof Upload Panel -->
+                    <section id="proof-upload" style="margin-top:1rem; padding:0.5rem; border-radius:8px; background:#fff;">
+                        <h2>Upload Challenge Proof</h2>
+                        <input type="file" id="proofFile" accept="image/*,video/*" />
+                        <button onclick="uploadProof()" class="action-button">Upload Proof</button>
+                    </section>
+
+                    <!-- Challenge Feed -->
+                    <section id="challenge-feed" style="margin-top:1rem; padding:0.5rem; border-radius:8px; background:#fff;">
+                        <h2>Recent Challenges</h2>
+                        <!-- Challenge cards will be dynamically added here -->
+                    </section>
 
                     <!-- Challenge Panel -->
                     <section id="challenge-panel" style="margin-top:1rem; padding:0.5rem; border-radius:8px; background:#fff;">
