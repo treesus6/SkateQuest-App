@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Sitemap: https://skatequest.netlify.app/sitemap.xml
+
+# Allow crawling of all content
+Disallow:

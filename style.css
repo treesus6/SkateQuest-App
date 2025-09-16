@@ -1,53 +1,342 @@
 /* style.css for SkateQuest */
-#map { height: 60vh; width: 100vw; margin: 0 auto; border-radius: 12px; box-shadow: 0 2px 8px #0002; }
-nav { display: flex; justify-content: center; gap: 0.5em; margin: 1em 0; }
-nav button { padding: 0.5em 1em; border-radius: 6px; border: none; background: #d2673d; color: #fff; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-nav button.active, nav button:hover { background: #a94e2b; }
-header { text-align: center; margin: 1em 0; }
-#content { max-width: 600px; margin: 0 auto; background: #fff8f3; border-radius: 8px; box-shadow: 0 1px 4px #0001; padding: 1em; min-height: 100px; }
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100vw; height: 100vh; background: #0008; }
-.modal-content { background: #fff; margin: 10vh auto; padding: 2em; border-radius: 10px; max-width: 400px; position: relative; }
-.close-button { position: absolute; top: 0.5em; right: 1em; font-size: 1.5em; cursor: pointer; }
-.camera-container { display: flex; flex-direction: column; align-items: center; }
-#cameraPreview { width: 100%; max-width: 320px; border-radius: 8px; margin-bottom: 1em; }
-.camera-controls button { margin: 0.5em; }
-.legal-content { max-height: 60vh; overflow-y: auto; }
-.user-location-marker { background: #d2673d; border-radius: 50%; width: 18px; height: 18px; border: 2px solid #fff; box-shadow: 0 0 4px #0006; }
+:root {
+    --primary-color: #d2673d;
+    --primary-dark: #a94e2b;
+    --background-light: #fff8f3;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.2);
+}
 
-/* Toast styles */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overscroll-behavior: none;
+}
+
+/* Base layout */
+#map { 
+    height: 50vh; 
+    width: 100%; 
+    margin: 0 auto; 
+    border-radius: 12px; 
+    box-shadow: 0 2px 8px var(--shadow-medium);
+    touch-action: manipulation;
+    z-index: 1;
+}
+
+/* Navigation */
+nav { 
+    display: flex; 
+    justify-content: center; 
+    gap: 0.5em; 
+    margin: 1em 0;
+    flex-wrap: wrap;
+    padding: 0 1rem;
+}
+
+nav button { 
+    padding: 0.8em 1.2em; 
+    border-radius: 8px; 
+    border: none; 
+    background: var(--primary-color); 
+    color: #fff; 
+    font-weight: bold; 
+    cursor: pointer; 
+    transition: all 0.2s;
+    font-size: 1rem;
+    min-width: 44px; /* iOS minimum touch target size */
+    min-height: 44px;
+}
+
+nav button.active, 
+nav button:hover,
+nav button:active { 
+    background: var(--primary-dark);
+    transform: scale(0.98);
+}
+
+/* Header */
+header { 
+    text-align: center; 
+    margin: 1em 0;
+    padding: 0 1rem;
+}
+
+/* Main content area */
+#content { 
+    width: 100%;
+    max-width: 600px; 
+    margin: 0 auto; 
+    background: var(--background-light); 
+    border-radius: 12px; 
+    box-shadow: 0 1px 4px var(--shadow-light); 
+    padding: 1em;
+    min-height: 100px;
+}
+
+/* Challenge cards */
+.challenge-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1rem 0;
+    box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.challenge-header {
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+}
+
+.challenge-info {
+    margin-top: 0.8rem;
+}
+
+.location-btn {
+    width: 100%;
+    padding: 0.8rem;
+    margin-top: 0.8rem;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+/* Modal styling */
+.modal { 
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content { 
+    background: #fff; 
+    margin: 5vh auto; 
+    padding: 1.5em; 
+    border-radius: 16px; 
+    width: 90%;
+    max-width: 400px; 
+    position: relative;
+}
+
+.close-button { 
+    position: absolute; 
+    top: 0.5em; 
+    right: 1em; 
+    font-size: 1.5em; 
+    cursor: pointer;
+    padding: 8px;
+}
+
+/* Camera elements */
+.camera-container { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    width: 100%;
+}
+
+#cameraPreview { 
+    width: 100%; 
+    max-width: 320px; 
+    border-radius: 12px; 
+    margin-bottom: 1em;
+}
+
+.camera-controls { 
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.camera-controls button { 
+    margin: 0.5em;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.user-location-marker { 
+    background: var(--primary-color); 
+    border-radius: 50%; 
+    width: 18px; 
+    height: 18px; 
+    border: 2px solid #fff; 
+    box-shadow: 0 0 4px var(--shadow-medium);
+}
+
+/* Toast notifications */
 .toast {
-	position: fixed;
-	bottom: 20px;
-	left: 50%;
-	transform: translateX(-50%);
-	background: #222;
-	color: #fff;
-	padding: 12px 20px;
-	border-radius: 8px;
-	font-size: 1rem;
-	z-index: 9999;
-	animation: fadeInOut 3s ease-in-out;
+    position: fixed;
+    bottom: env(safe-area-inset-bottom, 20px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 1rem;
+    z-index: 9999;
+    animation: fadeInOut 3s ease-in-out;
+    max-width: 90%;
+    text-align: center;
 }
 
+/* Panels */
 .panel {
-	background: #fff;
-	color: #111;
-	padding: 1rem;
-	border-radius: 8px;
-	box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    background: #fff;
+    color: #111;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px var(--shadow-light);
+    margin: 1rem 0;
 }
 
+/* Leaderboard */
 #leaderboard-list div {
-	margin: 0.5rem 0;
-	font-weight: bold;
+    margin: 0.8rem 0;
+    font-weight: 600;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
 }
 
-.badges { display:flex; gap:0.5rem; flex-wrap:wrap; }
-.badges div { background:#fff3; color:#fff; padding:.4rem .6rem; border-radius:6px; }
+/* Badges */
+.badges { 
+    display: flex; 
+    gap: 0.8rem; 
+    flex-wrap: wrap;
+    padding: 0.5rem;
+}
 
-/* Pending challenges list */
-#pending-challenges-list { display:flex; flex-direction:column; gap:0.6rem; }
-.pending-row { display:flex; justify-content:space-between; align-items:center; background:#f7f7f7; padding:.6rem; border-radius:6px; border:1px solid #eee; }
+.badges div { 
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* Pending challenges */
+#pending-challenges-list { 
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.pending-row { 
+    display: flex;
+    flex-direction: column;
+    background: #f7f7f7;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #eee;
+}
+
+@media (min-width: 768px) {
+    .pending-row {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+    nav button {
+        flex: 1 1 auto;
+        margin: 0.25rem;
+    }
+
+    .modal-content {
+        margin: 2vh auto;
+        padding: 1rem;
+    }
+
+    #map {
+        height: 40vh;
+        border-radius: 0;
+    }
+
+    #content {
+        border-radius: 20px 20px 0 0;
+        margin-top: -20px;
+        padding: 1.5rem 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .legal-content {
+        max-height: 70vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Safe area insets for modern mobile browsers */
+@supports(padding: max(0px)) {
+    body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* Touch feedback */
+@media (hover: none) {
+    .location-btn:active,
+    nav button:active,
+    .challenge-card:active {
+        transform: scale(0.98);
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px;
+    border: 2px solid var(--primary-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, 20px); }
+    10% { opacity: 1; transform: translate(-50%, 0); }
+    90% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -20px); }
+}
 .pending-row button { background:#2a8f2a; color:#fff; border:none; padding:.4rem .6rem; border-radius:6px; cursor:pointer; }
 .pending-row button:hover { background:#227422; }
 
