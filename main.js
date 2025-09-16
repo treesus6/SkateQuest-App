@@ -12,12 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const trickSelect = document.getElementById('trick-select');
     const challengerInput = document.getElementById('challenger-input');
     const issueChallengeButton = document.getElementById('issue-challenge');
-
-  alert("Proof uploaded!");
-}
-
-    
-    // Populate the dropdown boxes with suitable spots to upload
     // Small API helper. Use relative endpoints like '/spots' or pass a full URL.
     const apiFetch = async (endpoint, options) => {
         const base = 'https://api.skatequest.app/v1';
@@ -863,5 +857,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 100);
             }
         };
+        }
     }
 });
