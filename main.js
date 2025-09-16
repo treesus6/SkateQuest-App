@@ -630,9 +630,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             // Get current location
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject);
-            });
+            let position;
+            try {
+                position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    });
+                });
+                showToast("Location captured successfully!", "success");
+            } catch (geoError) {
+                console.warn("Geolocation failed:", geoError);
+                showToast("Unable to get location. Using default location.", "warning");
+                position = { coords: { latitude: 0, longitude: 0 } };
+            }
 
             const storageRef = ref(storage, `proofs/${userId}/${challengeId}`);
             await uploadBytes(storageRef, file);
