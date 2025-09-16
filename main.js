@@ -771,8 +771,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Initialize the feed with test data if empty
+    async function initializeTestData() {
+        const snapshot = await getDocs(collectionGroup(db, 'proofs'));
+        if (snapshot.empty) {
+            // Add some test challenges
+            const testChallenges = [
+                {
+                    userName: "SkaterPro",
+                    spotName: "Venice Beach Skatepark",
+                    trickName: "360 Flip",
+                    location: { lat: 33.9850, lng: -118.4695 },
+                    mediaUrl: "https://picsum.photos/400/300", // Placeholder image
+                    timestamp: Date.now() - 3600000, // 1 hour ago
+                    verifiedBy: ["user1", "user2"]
+                },
+                {
+                    userName: "RadRider",
+                    spotName: "Brooklyn Banks",
+                    trickName: "Kickflip Backside Tailslide",
+                    location: { lat: 40.7127, lng: -74.0059 },
+                    mediaUrl: "https://picsum.photos/400/300", // Placeholder image
+                    timestamp: Date.now() - 86400000, // 1 day ago
+                    verifiedBy: ["user1"]
+                }
+            ];
+
+            for (const challenge of testChallenges) {
+                const challengeId = Date.now().toString();
+                const userId = challenge.userName.toLowerCase();
+                const proofRef = doc(db, `challenges/${challengeId}/proofs/${userId}`);
+                await setDoc(proofRef, challenge);
+            }
+        }
+    }
+
     // Initialize the feed
-    loadChallengeFeed().catch(console.error);
+    Promise.all([
+        loadChallengeFeed(),
+        initializeTestData()
+    ]).catch(console.error);
 
     // Skate Rat functionality
     if (window.map) { // Check if map is initialized
