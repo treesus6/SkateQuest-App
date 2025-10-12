@@ -252,7 +252,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const ratingBtn = document.getElementById('rating-submit');
     if (ratingBtn) {
         ratingBtn.addEventListener('click', async () => {
-            const rating = parseInt(document.getElementById('rating-select').value, 10);
+            const ratingSelect = document.getElementById('rating-select');
+            const rating = ratingSelect ? parseInt(ratingSelect.value, 10) : 5;
             // prefer currently selected spot
             const selectedSpotId = (spotSelect && spotSelect.value) ? spotSelect.value : 'spotId123';
             await rateSpot(selectedSpotId, rating);
@@ -617,7 +618,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Upload proof functionality
     async function uploadProof() {
-        const file = document.getElementById("proofFile").files[0];
+        const proofFileInput = document.getElementById("proofFile");
+        if (!proofFileInput) {
+            console.error("proofFile element not found");
+            return;
+        }
+        const file = proofFileInput.files[0];
         const activeChallenge = window.activeChallenge || {};
         const userId = window.currentUser?.uid; // Get from your auth system
         const challengeId = activeChallenge.id;
