@@ -73,10 +73,15 @@ async function main() {
         btn.closest('.modal').style.display = 'none';
     });
     window.onclick = (event) => { if (event.target.classList.contains('modal')) event.target.style.display = "none"; };
-    function showModal(message) { modalText.textContent = message; modal.style.display = "block"; }
+    function showModal(message) { 
+        if (modalText) modalText.textContent = message; 
+        if (modal) modal.style.display = "block"; 
+    }
     function setActiveButton(activeBtn) {
         // Clear active state from all nav buttons
-        [discoverBtn, addSpotBtn, challengesBtn, profileBtn, legalBtn].forEach(btn => btn.classList.remove('active'));
+        [discoverBtn, addSpotBtn, challengesBtn, profileBtn, legalBtn].forEach(btn => {
+            if (btn && btn.classList) btn.classList.remove('active');
+        });
         // Only add the active class if a valid button element was provided
         if (activeBtn && activeBtn.classList) activeBtn.classList.add('active');
     }
@@ -100,9 +105,11 @@ async function main() {
         } catch (error) { console.error("Error signing in:", error); showModal("Could not connect. Please refresh."); }
     }
 
-    legalBtn.onclick = () => {
-        setActiveButton(legalBtn);
-        legalText.innerHTML = `
+    if (legalBtn) {
+        legalBtn.onclick = () => {
+            setActiveButton(legalBtn);
+            if (legalText) {
+                legalText.innerHTML = `
             <p><em>Last Updated: August 16, 2025</em></p>
             <p><strong>Legal Disclaimer:</strong> These documents are provided as a starting point. It is strongly recommended that you consult with a qualified legal professional to ensure these policies are complete and appropriate for your specific situation before launching your application.</p>
             
@@ -146,8 +153,12 @@ async function main() {
             <h4>3. Data Security</h4>
             <p>We use Google Firebase services to store and protect your data, relying on their robust security infrastructure to keep your information safe.</p>
         `;
-        legalModal.style.display = 'block';
-    };
+            }
+            if (legalModal) {
+                legalModal.style.display = 'block';
+            }
+        };
+    }
 
     signIn();
 
@@ -173,10 +184,12 @@ async function main() {
         }, e => { if (e.code === 1) showModal("Please enable location services."); }, { enableHighAccuracy: true });
     }
 
-    centerMapBtn.onclick = () => {
-        if (currentUserPosition) map.setView(currentUserPosition, 16);
-        else showModal("Finding your location...");
-    };
+    if (centerMapBtn) {
+        centerMapBtn.onclick = () => {
+            if (currentUserPosition) map.setView(currentUserPosition, 16);
+            else showModal("Finding your location...");
+        };
+    }
 
     function renderMarkers() {
         markers.forEach(m => map.removeLayer(m));
@@ -194,20 +207,24 @@ async function main() {
         });
     }
 
-    discoverBtn.onclick = () => { setActiveButton(discoverBtn); content.innerHTML = '<p>Use the map to discover skate spots. Tap markers for details.</p>'; };
+    if (discoverBtn) {
+        discoverBtn.onclick = () => { setActiveButton(discoverBtn); if (content) content.innerHTML = '<p>Use the map to discover skate spots. Tap markers for details.</p>'; };
+    }
 
-    addSpotBtn.onclick = () => {
-        // Toggle map-click-to-add mode. When enabled, user clicks map to place a spot.
-        if (mapClickToAdd) {
-            mapClickToAdd = false;
-            setActiveButton(null);
-            content.innerHTML = '<p>Map click-to-add canceled.</p>';
-            return;
-        }
-        mapClickToAdd = true;
-        setActiveButton(addSpotBtn);
-        content.innerHTML = '<p>Click anywhere on the map to add a new spot. Click the "Add Spot" button again to cancel.</p>';
-    };
+    if (addSpotBtn) {
+        addSpotBtn.onclick = () => {
+            // Toggle map-click-to-add mode. When enabled, user clicks map to place a spot.
+            if (mapClickToAdd) {
+                mapClickToAdd = false;
+                setActiveButton(null);
+                if (content) content.innerHTML = '<p>Map click-to-add canceled.</p>';
+                return;
+            }
+            mapClickToAdd = true;
+            setActiveButton(addSpotBtn);
+            if (content) content.innerHTML = '<p>Click anywhere on the map to add a new spot. Click the "Add Spot" button again to cancel.</p>';
+        };
+    }
 
     // Helper to show the Add Spot form for given coordinates
     function showAddSpotForm(lat = '', lng = '') {
@@ -291,76 +308,95 @@ async function main() {
         } catch (err) { console.error("Camera Error:", err); showModal("Could not access camera. Please check permissions."); }
     }
 
-    recordBtn.onclick = () => {
-        recordedChunks = [];
-        mediaRecorder = new MediaRecorder(videoStream);
-        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
-        mediaRecorder.onstop = () => {
-            const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-            cameraPreview.srcObject = null;
-            cameraPreview.src = URL.createObjectURL(videoBlob);
-            saveVideoBtn.style.display = 'inline-block';
+    if (recordBtn) {
+        recordBtn.onclick = () => {
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(videoStream);
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                if (cameraPreview) {
+                    cameraPreview.srcObject = null;
+                    cameraPreview.src = URL.createObjectURL(videoBlob);
+                }
+                if (saveVideoBtn) saveVideoBtn.style.display = 'inline-block';
+            };
+            mediaRecorder.start();
+            recordBtn.style.display = 'none';
+            if (stopRecordBtn) stopRecordBtn.style.display = 'inline-block';
         };
-        mediaRecorder.start();
-        recordBtn.style.display = 'none';
-        stopRecordBtn.style.display = 'inline-block';
-    };
+    }
 
-    stopRecordBtn.onclick = () => { mediaRecorder.stop(); stopRecordBtn.style.display = 'none'; };
+    if (stopRecordBtn) {
+        stopRecordBtn.onclick = () => { 
+            if (mediaRecorder) mediaRecorder.stop(); 
+            stopRecordBtn.style.display = 'none'; 
+        };
+    }
     
-    saveVideoBtn.onclick = async () => {
-        showModal("Uploading video...");
-        const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-        const videoFileName = `${currentUserId}_${Date.now()}.webm`;
-        const storageRef = ref(storage, `skate_spots_videos/${videoFileName}`);
-        try {
-            const snapshot = await uploadBytes(storageRef, videoBlob);
-            recordedVideoUrl = await getDownloadURL(snapshot.ref);
-            document.getElementById('videoStatus').innerHTML = `<p>✅ Video attached!</p>`;
-            closeCamera();
-            showModal("Video uploaded successfully!");
-        } catch (error) {
-            console.error("Upload failed", error);
-            showModal("Video upload failed. Please try again. (Note: Storage setup may be incomplete).");
-        }
-    };
+    if (saveVideoBtn) {
+        saveVideoBtn.onclick = async () => {
+            showModal("Uploading video...");
+            const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            const videoFileName = `${currentUserId}_${Date.now()}.webm`;
+            const storageRef = ref(storage, `skate_spots_videos/${videoFileName}`);
+            try {
+                const snapshot = await uploadBytes(storageRef, videoBlob);
+                recordedVideoUrl = await getDownloadURL(snapshot.ref);
+                const videoStatus = document.getElementById('videoStatus');
+                if (videoStatus) videoStatus.innerHTML = `<p>✅ Video attached!</p>`;
+                closeCamera();
+                showModal("Video uploaded successfully!");
+            } catch (error) {
+                console.error("Upload failed", error);
+                showModal("Video upload failed. Please try again. (Note: Storage setup may be incomplete).");
+            }
+        };
+    }
 
     function closeCamera() {
         if (videoStream) {
             videoStream.getTracks().forEach(track => track.stop());
         }
-        cameraModal.style.display = "none";
-        cameraPreview.srcObject = null;
-        cameraPreview.src = '';
+        if (cameraModal) cameraModal.style.display = "none";
+        if (cameraPreview) {
+            cameraPreview.srcObject = null;
+            cameraPreview.src = '';
+        }
     }
 
-    challengesBtn.onclick = () => {
-        setActiveButton(challengesBtn);
-        let html = '<h3>Skate Challenges</h3><ul>';
-        challenges.forEach(c => {
-            const isDone = userProfile.challengesCompleted && userProfile.challengesCompleted.includes(c.id);
-            html += `<li>${c.name} - ${c.xp} XP <button class="complete-challenge-btn" data-challenge-id="${c.id}" ${isDone ? 'disabled' : ''}>${isDone ? 'Completed' : 'Complete'}</button></li>`;
-        });
-        content.innerHTML = html + '</ul>';
-    };
+    if (challengesBtn) {
+        challengesBtn.onclick = () => {
+            setActiveButton(challengesBtn);
+            let html = '<h3>Skate Challenges</h3><ul>';
+            challenges.forEach(c => {
+                const isDone = userProfile.challengesCompleted && userProfile.challengesCompleted.includes(c.id);
+                html += `<li>${c.name} - ${c.xp} XP <button class="complete-challenge-btn" data-challenge-id="${c.id}" ${isDone ? 'disabled' : ''}>${isDone ? 'Completed' : 'Complete'}</button></li>`;
+            });
+            if (content) content.innerHTML = html + '</ul>';
+        };
+    }
 
-    content.addEventListener('click', async e => {
-        if (e.target && e.target.classList.contains('complete-challenge-btn')) {
-            const cId = parseInt(e.target.dataset.challengeId);
-            const c = challenges.find(ch => ch.id === cId);
-            if (c && currentUserId && !(userProfile.challengesCompleted && userProfile.challengesCompleted.includes(cId))) {
-                const profileRef = doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`);
-                const updatedCs = [...(userProfile.challengesCompleted || []), cId];
-                try { await updateDoc(profileRef, { challengesCompleted: updatedCs, xp: increment(c.xp) }); showModal(`Challenge "${c.name}" done! +${c.xp} XP!`); } 
-                catch (err) { console.error(err); showModal("Failed to complete challenge."); }
+    if (content) {
+        content.addEventListener('click', async e => {
+            if (e.target && e.target.classList.contains('complete-challenge-btn')) {
+                const cId = parseInt(e.target.dataset.challengeId);
+                const c = challenges.find(ch => ch.id === cId);
+                if (c && currentUserId && !(userProfile.challengesCompleted && userProfile.challengesCompleted.includes(cId))) {
+                    const profileRef = doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`);
+                    const updatedCs = [...(userProfile.challengesCompleted || []), cId];
+                    try { await updateDoc(profileRef, { challengesCompleted: updatedCs, xp: increment(c.xp) }); showModal(`Challenge "${c.name}" done! +${c.xp} XP!`); } 
+                    catch (err) { console.error(err); showModal("Failed to complete challenge."); }
+                }
             }
-        }
-    });
+        });
+    }
     
     // Selected file for profile picture upload
     let selectedProfilePicFile = null;
 
     function renderProfile() {
+        if (!content) return;
         const xpNext = (userProfile.level || 1) * 100;
         const photoHtml = userProfile.photoUrl ? `<img src="${userProfile.photoUrl}" alt="profile" style="width:96px;height:96px;border-radius:8px;display:block;margin:0.5em 0;object-fit:cover;"/>` : '';
         content.innerHTML = `
@@ -377,7 +413,10 @@ async function main() {
             <div id="userSpotsList"><p>Loading your spots...</p></div>
         `;
 
-        document.getElementById('editProfileBtn').onclick = showEditProfileForm;
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        if (editProfileBtn) {
+            editProfileBtn.onclick = showEditProfileForm;
+        }
 
         // Show user's spots (from skateSpots cached in memory)
         const userSpots = skateSpots.filter(s => s.addedBy === currentUserId);
@@ -422,31 +461,39 @@ async function main() {
             preview.innerHTML = `<img src="${url}" style="max-width:120px;border-radius:8px;margin-top:0.5em;"/>`;
         };
 
-        document.getElementById('cancelEditProfile').onclick = () => { renderProfile(); };
+        const cancelEditBtn = document.getElementById('cancelEditProfile');
+        if (cancelEditBtn) {
+            cancelEditBtn.onclick = () => { renderProfile(); };
+        }
 
-        document.getElementById('editProfileForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const newName = document.getElementById('profileName').value.trim();
-            const profilePath = `/artifacts/${appId}/users/${currentUserId}/profile/data`;
-            try {
-                let photoUrl = userProfile.photoUrl || null;
-                if (selectedProfilePicFile) {
-                    const fname = `profile_pics/${currentUserId}_${Date.now()}_${selectedProfilePicFile.name}`;
-                    const sRef = ref(storage, fname);
-                    const snapshot = await uploadBytes(sRef, selectedProfilePicFile);
-                    photoUrl = await getDownloadURL(snapshot.ref);
+        const editProfileForm = document.getElementById('editProfileForm');
+        if (editProfileForm) {
+            editProfileForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const newName = document.getElementById('profileName').value.trim();
+                const profilePath = `/artifacts/${appId}/users/${currentUserId}/profile/data`;
+                try {
+                    let photoUrl = userProfile.photoUrl || null;
+                    if (selectedProfilePicFile) {
+                        const fname = `profile_pics/${currentUserId}_${Date.now()}_${selectedProfilePicFile.name}`;
+                        const sRef = ref(storage, fname);
+                        const snapshot = await uploadBytes(sRef, selectedProfilePicFile);
+                        photoUrl = await getDownloadURL(snapshot.ref);
+                    }
+                    await updateDoc(doc(db, profilePath), { username: newName, photoUrl });
+                    showModal('Profile updated');
+                    // refresh UI will happen from onSnapshot listener
+                } catch (err) {
+                    console.error('Failed to update profile', err);
+                    showModal(`Failed to update profile: ${err && err.message ? err.message : err}`);
                 }
-                await updateDoc(doc(db, profilePath), { username: newName, photoUrl });
-                showModal('Profile updated');
-                // refresh UI will happen from onSnapshot listener
-            } catch (err) {
-                console.error('Failed to update profile', err);
-                showModal(`Failed to update profile: ${err && err.message ? err.message : err}`);
-            }
-        };
+            };
+        }
     }
 
-    profileBtn.onclick = () => { setActiveButton(profileBtn); renderProfile(); };
+    if (profileBtn) {
+        profileBtn.onclick = () => { setActiveButton(profileBtn); renderProfile(); };
+    }
 }
 
 // Start the main application logic ONLY after the page is fully loaded

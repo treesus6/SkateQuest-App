@@ -14,7 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const issueChallengeButton = document.getElementById('issue-challenge');
     // Small API helper. Use relative endpoints like '/spots' or pass a full URL.
     const apiFetch = async (endpoint, options) => {
-        const base = 'https://api.skatequest.app/v1';
+        // Use relative path for Netlify Functions or configure your backend URL here
+        // For now, using a placeholder that won't cause ERR_NAME_NOT_RESOLVED
+        const base = '/.netlify/functions';
         const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
         // Attach Firebase auth token when available
         const headers = (options && options.headers) ? { ...options.headers } : {};
@@ -27,9 +29,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // ignore token errors, continue without auth header
             console.debug('apiFetch: could not get id token', e && e.message);
         }
-        const res = await fetch(url, { ...(options || {}), headers });
-        if (!res.ok) throw new Error(`API request failed: ${res.status} ${res.statusText}`);
-        return res.json();
+        try {
+            const res = await fetch(url, { ...(options || {}), headers });
+            if (!res.ok) throw new Error(`API request failed: ${res.status} ${res.statusText}`);
+            return res.json();
+        } catch (error) {
+            // Handle network errors gracefully
+            console.error('API fetch error:', error);
+            throw error;
+        }
     };
 
     // Helper to populate a <select> with items from an API
@@ -244,7 +252,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const ratingBtn = document.getElementById('rating-submit');
     if (ratingBtn) {
         ratingBtn.addEventListener('click', async () => {
-            const rating = parseInt(document.getElementById('rating-select').value, 10);
+            const ratingSelect = document.getElementById('rating-select');
+            if (!ratingSelect) {
+                showToast('Rating select element not found. Please reload the page or contact support.', 'error');
+                return;
+            }
+            const rating = parseInt(ratingSelect.value, 10);
             // prefer currently selected spot
             const selectedSpotId = (spotSelect && spotSelect.value) ? spotSelect.value : 'spotId123';
             await rateSpot(selectedSpotId, rating);
@@ -609,7 +622,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Upload proof functionality
     async function uploadProof() {
-        const file = document.getElementById("proofFile").files[0];
+        const proofFileInput = document.getElementById("proofFile");
+        if (!proofFileInput) {
+            console.error("proofFile element not found");
+            return;
+        }
+        const file = proofFileInput.files[0];
         const activeChallenge = window.activeChallenge || {};
         const userId = window.currentUser?.uid; // Get from your auth system
         const challengeId = activeChallenge.id;
