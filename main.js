@@ -253,7 +253,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ratingBtn) {
         ratingBtn.addEventListener('click', async () => {
             const ratingSelect = document.getElementById('rating-select');
-            const rating = ratingSelect ? parseInt(ratingSelect.value, 10) : 5;
+            if (!ratingSelect) {
+                showToast('Rating select element not found. Please reload the page or contact support.', 'error');
+                return;
+            }
+            const rating = parseInt(ratingSelect.value, 10);
             // prefer currently selected spot
             const selectedSpotId = (spotSelect && spotSelect.value) ? spotSelect.value : 'spotId123';
             await rateSpot(selectedSpotId, rating);
