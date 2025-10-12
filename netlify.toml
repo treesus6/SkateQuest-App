@@ -1,7 +1,6 @@
 
-  [build]
-  publish = ".next"
-
+[build]
+  publish = "."
   command = ""
 
 [[redirects]]
