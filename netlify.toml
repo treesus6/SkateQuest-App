@@ -1,8 +1,9 @@
-
-  [build]
-  "
-
+[build]
   command = ""
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
 
 [[redirects]]
   from = "/*"

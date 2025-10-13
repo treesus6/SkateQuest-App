@@ -1,4 +1,4 @@
-const handler = async (event) => {
+exports.handler = async (event) => {
     const tricks = {
         kickflip: { difficulty: 'Intermediate' },
         ollie: { difficulty: 'Beginner' },
@@ -14,5 +14,3 @@ const handler = async (event) => {
         }
     };
 };
-
-export { handler };
