@@ -332,7 +332,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     const challengeSnap = await tx.get(challengeRef);
                     if (!challengeSnap.exists()) throw new Error('Challenge not found');
                     const xpEarned = (challengeSnap.data() && challengeSnap.data().xp) || 0;
-                    tx.update(userRef, { xp: window.firebaseInstances.increment ? window.firebaseInstances.increment(xpEarned) : xpEarned });
+                    
+                    // Use increment if available, otherwise manually add to existing XP
+                    if (window.firebaseInstances.increment) {
+                        tx.update(userRef, { xp: window.firebaseInstances.increment(xpEarned) });
+                    } else {
+                        const userSnap = await tx.get(userRef);
+                        const currentXp = (userSnap.exists() && userSnap.data().xp) || 0;
+                        tx.update(userRef, { xp: currentXp + xpEarned });
+                    }
+                    
                     const extra = {};
                     try { if (window.firebaseInstances.serverTimestamp) extra.completedAt = window.firebaseInstances.serverTimestamp(); } catch (e) {}
                     tx.update(challengeRef, { status: 'complete', completedBy: userId, ...extra });
@@ -347,7 +356,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const challengeSnap = await getDoc(challengeRef);
                 if (!challengeSnap.exists()) throw new Error('Challenge not found');
                 const xpEarned = (challengeSnap.data() && challengeSnap.data().xp) || 0;
-                await updateDoc(userRef, { xp: window.firebaseInstances.increment ? window.firebaseInstances.increment(xpEarned) : xpEarned });
+                
+                // Use increment if available, otherwise manually add to existing XP
+                if (window.firebaseInstances.increment) {
+                    await updateDoc(userRef, { xp: window.firebaseInstances.increment(xpEarned) });
+                } else {
+                    const userSnap = await getDoc(userRef);
+                    const currentXp = (userSnap.exists() && userSnap.data().xp) || 0;
+                    await updateDoc(userRef, { xp: currentXp + xpEarned });
+                }
+                
                 const extra = {};
                 try { if (window.firebaseInstances.serverTimestamp) extra.completedAt = window.firebaseInstances.serverTimestamp(); } catch (e) {}
                 await updateDoc(challengeRef, { status: 'complete', completedBy: userId, ...extra });
