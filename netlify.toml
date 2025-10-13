@@ -1,6 +1,6 @@
 
   [build]
-  publish = ".next"
+  "
 
   command = ""
 
@@ -13,3 +13,4 @@
   # navigation requests automatically when files are not found.
 
 # No build step needed — this is a plain static site. Netlify will serve files from the project root.
+
