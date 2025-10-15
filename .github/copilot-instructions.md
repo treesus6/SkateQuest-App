@@ -23,7 +23,7 @@ SkateQuest is a Progressive Web App (PWA) for discovering, sharing, and tracking
 
 ### HTML
 - Use semantic HTML5 elements
-- Maintain proper indentation (4 spaces)
+- Maintain consistent indentation matching the existing codebase
 - Include appropriate ARIA attributes for accessibility
 - Keep meta tags comprehensive for SEO and social media
 
@@ -55,7 +55,8 @@ SkateQuest is a Progressive Web App (PWA) for discovering, sharing, and tracking
 - Store references to media URLs in Firestore documents
 
 ### Security
-- Never expose Firebase configuration secrets in code (use environment variables for sensitive data)
+- Firebase client configuration (apiKey, authDomain, etc.) is safe to include in frontend code
+- Never expose server-side secrets or private keys in code (use environment variables for these)
 - Follow Firestore security rules defined in firestore.rules
 - Validate all user input before storing in database
 - Sanitize user-generated content to prevent XSS attacks
