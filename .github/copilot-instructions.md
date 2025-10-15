@@ -54,7 +54,7 @@ SkateQuest is a Progressive Web App (PWA) that helps skateboarders discover, sha
 - Always handle errors with try-catch blocks for async operations
 - Use Firebase SDK methods directly (avoid wrappers unless necessary)
 - Document complex logic with inline comments
-- Add copyright headers to new files: `// Copyright (c) 2024 Your Name / SkateQuest. All Rights Reserved.`
+- Add copyright headers to new files: `// Copyright (c) 2024 SkateQuest. All Rights Reserved.`
 
 ### HTML
 
@@ -113,11 +113,12 @@ SkateQuest is a Progressive Web App (PWA) that helps skateboarders discover, sha
 
 ### Security
 
-- Never commit Firebase API keys to public repos (use environment variables for sensitive production keys)
-- Implement proper Firestore security rules
-- Validate all user inputs
+- Firebase client API keys are designed to be public and safe to commit (security is enforced via Firestore security rules)
+- **Never** commit Firebase Admin SDK service account keys or private keys
+- Implement proper Firestore security rules to protect data
+- Validate all user inputs on both client and server side
 - Use Firebase Auth to verify user identity
-- Use Cloud Functions for sensitive operations (e.g., awarding XP)
+- Use Cloud Functions for sensitive operations (e.g., awarding XP) to prevent client-side manipulation
 
 ### Performance
 
