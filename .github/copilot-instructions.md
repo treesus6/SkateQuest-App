@@ -15,6 +15,7 @@ SkateQuest is a Progressive Web App (PWA) for discovering, sharing, and tracking
 
 ### JavaScript
 - Use modern ES6+ syntax (const/let, arrow functions, async/await, destructuring)
+- Use 4-space indentation for consistency with the existing codebase
 - Follow consistent semicolon usage as seen in existing code
 - Use async/await for asynchronous operations rather than callbacks
 - Prefer template literals for string interpolation
@@ -23,7 +24,7 @@ SkateQuest is a Progressive Web App (PWA) for discovering, sharing, and tracking
 
 ### HTML
 - Use semantic HTML5 elements
-- Maintain consistent indentation matching the existing codebase
+- Use 4-space indentation for consistency with the existing codebase
 - Include appropriate ARIA attributes for accessibility
 - Keep meta tags comprehensive for SEO and social media
 
