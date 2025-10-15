@@ -113,9 +113,9 @@ SkateQuest is a Progressive Web App (PWA) that helps skateboarders discover, sha
 
 ### Security
 
-- Firebase client API keys are designed to be public and safe to commit (security is enforced via Firestore security rules)
-- **Never** commit Firebase Admin SDK service account keys or private keys
-- Implement proper Firestore security rules to protect data
+- Firebase client API keys (apiKey, authDomain, projectId in Firebase config) are designed to be public and safe to commit - security is enforced via Firestore security rules
+- **Never** commit Firebase Admin SDK service account keys (JSON files with private keys) or other sensitive credentials
+- Implement proper Firestore security rules to protect data (see firestore.rules)
 - Validate all user inputs on both client and server side
 - Use Firebase Auth to verify user identity
 - Use Cloud Functions for sensitive operations (e.g., awarding XP) to prevent client-side manipulation
