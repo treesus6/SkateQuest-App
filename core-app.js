@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Your Name / SkateQuest. All Rights Reserved.
+// Copyright (c) 2024 SkateQuest. All Rights Reserved.
 
 // Defensive guard: ignore malformed JSON coming from browser extensions or other storage writers.
 // Some browser extensions write non-JSON values into storage which can cause uncaught JSON.parse
