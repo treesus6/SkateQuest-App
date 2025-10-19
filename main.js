@@ -1,5 +1,5 @@
-// main.js
-import './Untitled-2.js';
+// main.js - Additional features and functionality for SkateQuest
+import './core-app.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, setDoc, collectionGroup, getDocs } from "firebase/firestore";
 

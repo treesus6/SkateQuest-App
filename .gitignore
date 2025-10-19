@@ -43,3 +43,9 @@ firestore-debug.log
 tmp/
 temp/
 *.tmp
+
+# Backup files
+*.bak
+*.backup
+*.local
+*~
