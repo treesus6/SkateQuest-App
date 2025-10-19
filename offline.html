@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#d2673d">
+    <title>SkateQuest - Offline</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f0ea 0%, #e8ddd3 100%);
+            color: #40312f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .offline-container {
+            max-width: 500px;
+            background: white;
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #d2673d;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .retry-btn {
+            background: #d2673d;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .retry-btn:hover {
+            background: #a94e2b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(210, 103, 61, 0.3);
+        }
+
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+
+        .offline-tips {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #fff8f3;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .offline-tips h3 {
+            color: #d2673d;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .offline-tips ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .offline-tips li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #666;
+        }
+
+        .offline-tips li:before {
+            content: "🛹";
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <span class="emoji">📡❌</span>
+        <h1>You're Offline</h1>
+        <p>
+            Looks like you've lost your internet connection. 
+            SkateQuest needs to be online to discover new spots and sync your progress.
+        </p>
+        <button class="retry-btn" onclick="window.location.reload()">
+            Try Again
+        </button>
+        
+        <div class="offline-tips">
+            <h3>While You Wait:</h3>
+            <ul>
+                <li>Check your WiFi or mobile data connection</li>
+                <li>Make sure airplane mode is off</li>
+                <li>Try moving to an area with better signal</li>
+                <li>Some cached content may still be available</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Auto-reload when connection is restored
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+
+        // Check connection status periodically
+        setInterval(() => {
+            if (navigator.onLine) {
+                window.location.reload();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

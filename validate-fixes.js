@@ -40,28 +40,8 @@ if (allFound) {
     console.log('  FAIL: Some required Firebase functions are missing\n');
 }
 
-// Test 3: Check Untitled-1.html
-console.log('✓ Test 3: Check Firebase imports in Untitled-1.html');
-const untitled1Html = fs.readFileSync('./Untitled-1.html', 'utf8');
-allFound = true;
-
-requiredFunctions.forEach(fn => {
-    if (untitled1Html.includes(fn)) {
-        console.log(`  ✓ ${fn} found in imports`);
-    } else {
-        console.log(`  ✗ ${fn} NOT found in imports`);
-        allFound = false;
-    }
-});
-
-if (allFound) {
-    console.log('  PASS: All required Firebase functions are imported in Untitled-1.html\n');
-} else {
-    console.log('  FAIL: Some required Firebase functions are missing\n');
-}
-
-// Test 4: Verify API endpoint change
-console.log('✓ Test 4: Check API endpoint configuration');
+// Test 3: Verify API endpoint change
+console.log('✓ Test 3: Check API endpoint configuration');
 const mainJs = fs.readFileSync('./main.js', 'utf8');
 
 if (mainJs.includes('api.skatequest.app')) {
@@ -72,22 +52,22 @@ if (mainJs.includes('api.skatequest.app')) {
     console.log('  WARNING: API endpoint configuration not found\n');
 }
 
-// Test 5: Check for DOM safety
-console.log('✓ Test 5: Verify DOM safety checks');
-const untitled2Js = fs.readFileSync('./Untitled-2.js', 'utf8');
+// Test 4: Check for DOM safety
+console.log('✓ Test 4: Verify DOM safety checks');
+const appJs = fs.readFileSync('./app.js', 'utf8');
 
-const hasLegalBtnCheck = untitled2Js.includes('if (legalBtn)');
-const hasContentCheck = untitled2Js.includes('if (content)');
-const hasModalCheck = untitled2Js.includes('if (modal)');
+const hasLegalBtnCheck = appJs.includes('if (legalBtn)');
+const hasContentCheck = appJs.includes('if (content)');
+const hasModalCheck = appJs.includes('if (modal)');
 
 if (hasLegalBtnCheck && hasContentCheck && hasModalCheck) {
-    console.log('  PASS: DOM safety checks present in Untitled-2.js\n');
+    console.log('  PASS: DOM safety checks present in app.js\n');
 } else {
     console.log('  PARTIAL: Some DOM safety checks may be missing\n');
 }
 
-// Test 6: Verify Firestore rules updated
-console.log('✓ Test 6: Check Firestore rules');
+// Test 5: Verify Firestore rules updated
+console.log('✓ Test 5: Check Firestore rules');
 const firestoreRules = fs.readFileSync('./firestore.rules', 'utf8');
 
 if (firestoreRules.includes('allow read: if true') && 

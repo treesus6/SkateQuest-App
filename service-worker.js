@@ -1,9 +1,11 @@
-const CACHE_NAME = 'skatequest-cache-v2';
+const CACHE_NAME = 'skatequest-cache-v3';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/offline.html',
   '/style.css',
   '/main.js',
+  '/app.js',
   '/pwa.js',
   '/manifest.json',
   '/icons/skatequest-icon-192.png',
@@ -35,7 +37,13 @@ self.addEventListener('fetch', (event) => {
       if (response) {
         return response;
       }
-      return fetch(event.request);
+      // Try to fetch from network
+      return fetch(event.request).catch(() => {
+        // If offline and requesting a page, show offline page
+        if (event.request.mode === 'navigate') {
+          return caches.match('/offline.html');
+        }
+      });
     })
   );
 });
