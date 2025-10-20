@@ -1,7 +1,7 @@
 
 [build]
-  publish = "."
-  command = ""
+  publish = ".next"
+  command = "npm run build"
 
 [[redirects]]
   from = "/*"
