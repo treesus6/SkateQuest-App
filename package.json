@@ -1,1 +1,22 @@
-{"name":"skatequest-site","version":"1.0.0","private":true,"scripts":{"dev":"next dev","build":"next build","start":"next start","test":"cypress run"},"dependencies":{"next":"14.1.0","react":"18.2.0","react-dom":"18.2.0"},"devDependencies":{"cypress":"^13.6.6"}}
+{
+  "name": "skatequest-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "cypress run",
+    "netlify:deploy:draft": "npx netlify deploy --dir=build",
+    "netlify:deploy": "npx netlify deploy --dir=build --prod"
+  },
+  "dependencies": {
+    "next": "14.1.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "cypress": "^13.6.6",
+    "netlify-cli": "latest"
+  }
+}
