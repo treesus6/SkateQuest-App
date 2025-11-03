@@ -1,11 +1,10 @@
 // main.js
-import './Untitled-2.js';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, doc, setDoc, collectionGroup, getDocs } from "firebase/firestore";
+// Note: firebase modules are loaded in `index.html` via CDN and exposed as
+// `window.firebaseInstances`. Avoid using bare module specifiers in browser
+// JS to prevent "Failed to resolve module specifier" errors.
 
-// Initialize Firebase services
-const db = getFirestore();
-const storage = getStorage();
+// ...existing code will reference firebase via window.firebaseInstances
+// e.g. const { db, storage, doc, getDocs } = window.firebaseInstances;
 
 document.addEventListener('DOMContentLoaded', function() {
     const spotSelect = document.getElementById('spot-select');
@@ -690,6 +689,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Challenge feed functionality
     async function loadChallengeFeed() {
         try {
+            if (!window.firebaseInstances) return;
+            const { db, getDocs, collectionGroup } = window.firebaseInstances;
             const snapshot = await getDocs(collectionGroup(db, 'proofs'));
             const feed = document.getElementById("challenge-feed");
             feed.innerHTML = "<h2>Global Challenge Feed 🌍</h2>";
@@ -802,6 +803,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the feed with test data if empty
     const initializeTestData = async () => {
+        if (!window.firebaseInstances) return;
+        const { db, getDocs, collectionGroup } = window.firebaseInstances;
         const snapshot = await getDocs(collectionGroup(db, 'proofs'));
         if (snapshot.empty) {
             // Add some test challenges

@@ -1,9 +1,9 @@
-const CACHE_NAME = 'skatequest-cache-v2';
+const CACHE_NAME = 'skatequest-cache-v7';
 const urlsToCache = [
   '/',
   '/index.html',
   '/style.css',
-  '/main.js',
+  '/app.js',
   '/pwa.js',
   '/manifest.json',
   '/icons/skatequest-icon-192.png',

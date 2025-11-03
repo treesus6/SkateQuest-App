@@ -4,6 +4,12 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
         <meta name="theme-color" content="#d2673d" />
+        
+        <!-- Prevent aggressive caching during development -->
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        
         <title>SkateQuest - Discover and Share Skateboarding Spots</title>
         
         <!-- SEO Meta Tags -->
@@ -176,7 +182,7 @@
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
             import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
             import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-            import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+            import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction, query, where, orderBy, limit, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
             import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
             import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
@@ -197,12 +203,13 @@
             const storage = getStorage(app);
 
             const functions = getFunctions(app);
-            window.firebaseInstances = { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction, query, where, orderBy, limit, getDocs, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, functions, httpsCallable };
+            window.firebaseInstances = { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction, query, where, orderBy, limit, getDocs, collectionGroup, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, functions, httpsCallable };
+            console.log('✓ Firebase initialized successfully');
         </script>
 
-        <!-- App JS -->
-    <script src="main.js" type="module" defer></script>
-    <script type="module" src="pwa.js" defer></script>
+        <!-- App JS with cache-busting -->
+    <script src="app.js?v=8" defer></script>
+    <script src="pwa.js?v=8" defer></script>
     </body>
 </html>
 

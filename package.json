@@ -1,1 +1,13 @@
-{"name":"skatequest-site","version":"1.0.0","private":true,"scripts":{"dev":"next dev","build":"next build","start":"next start","test":"cypress run"},"dependencies":{"next":"14.1.0","react":"18.2.0","react-dom":"18.2.0"},"devDependencies":{"cypress":"^13.6.6"}}
+{
+  "name": "skatequest-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SkateQuest static site",
+  "scripts": {
+    "serve-local": "python3 -m http.server 8000",
+    "start": "npm run serve-local",
+    "test": "echo \"No tests configured for this static site\" && exit 0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

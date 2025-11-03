@@ -22,17 +22,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     let mediaRecorder, recordedChunks = [], recordedVideoUrl = null, videoStream = null;
 
     const content = document.getElementById('content');
-    const discoverBtn = document.getElementById('discoverBtn'), addSpotBtn = document.getElementById('addSpotBtn'), profileBtn = document.getElementById('profileBtn'), centerMapBtn = document.getElementById('centerMapBtn'), legalBtn = document.getElementById('legalBtn');
-    const modal = document.getElementById('customModal'), modalText = document.getElementById('modalText'), closeButton = document.querySelector('.close-button');
-    const cameraModal = document.getElementById('cameraModal'), cameraPreview = document.getElementById('cameraPreview'), recordBtn = document.getElementById('recordBtn'), stopRecordBtn = document.getElementById('stopRecordBtn'), saveVideoBtn = document.getElementById('saveVideoBtn'), cancelCameraBtn = document.getElementById('cancelCameraBtn');
-    const legalModal = document = document.getElementById('legalModal'), legalText = document.getElementById('legalText');
+    const discoverBtn = document.getElementById('discoverBtn');
+    const addSpotBtn = document.getElementById('addSpotBtn');
+    const profileBtn = document.getElementById('profileBtn');
+    const centerMapBtn = document.getElementById('centerMapBtn');
+    const legalBtn = document.getElementById('legalBtn');
+    const modal = document.getElementById('customModal');
+    const modalText = document.getElementById('modalText');
+    const closeButton = document.querySelector('.close-button');
+    const cameraModal = document.getElementById('cameraModal');
+    const cameraPreview = document.getElementById('cameraPreview');
+    const recordBtn = document.getElementById('recordBtn');
+    const stopRecordBtn = document.getElementById('stopRecordBtn');
+    const saveVideoBtn = document.getElementById('saveVideoBtn');
+    const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+    const legalModal = document.getElementById('legalModal');
+    const legalText = document.getElementById('legalText');
 
     document.querySelectorAll('.close-button').forEach(btn => btn.onclick = () => {
         btn.closest('.modal').style.display = 'none';
     });
     window.onclick = (event) => { if (event.target.classList.contains('modal')) event.target.style.display = "none"; };
-    function showModal(message) { modalText.textContent = message; modal.style.display = "block"; }
-    function setActiveButton(activeBtn) { [discoverBtn, addSpotBtn, profileBtn, legalBtn].forEach(btn => btn.classList.remove('active')); activeBtn.classList.add('active'); }
+    function showModal(message) { 
+        if (modalText && modal) {
+            modalText.textContent = message;
+            modal.style.display = "block";
+        } else {
+            console.warn('Modal elements not found:', message);
+        }
+    }
+    function setActiveButton(activeBtn) {
+        if (!activeBtn) return;
+        [discoverBtn, addSpotBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
+        activeBtn.classList.add('active');
+    }
+
+    console.log('Button check:', {discoverBtn, addSpotBtn, profileBtn, legalBtn});
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -40,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             setupRealtimeListeners();
             startGpsTracking();
             document.querySelectorAll('nav button').forEach(b => b.disabled = false);
-            discoverBtn.click();
+            if (discoverBtn) discoverBtn.click();
         } else {
             currentUserId = null;
             document.querySelectorAll('nav button').forEach(b => b.disabled = true);
@@ -53,9 +78,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) { console.error("Error signing in:", error); showModal("Could not connect. Please refresh."); }
     }
 
-    legalBtn.onclick = () => {
-        setActiveButton(legalBtn);
-        legalText.innerHTML = `
+    if (legalBtn && legalText && legalModal) {
+        legalBtn.onclick = () => {
+            setActiveButton(legalBtn);
+            legalText.innerHTML = `
             <p><em>Last Updated: August 16, 2025</em></p>
             <p><strong>Legal Disclaimer:</strong> These documents are provided as a starting point. It is strongly recommended that you consult with a qualified legal professional to ensure these policies are complete and appropriate for your specific situation before launching your application.</p>
             
@@ -99,8 +125,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             <h4>3. Data Security</h4>
             <p>We use Google Firebase services to store and protect your data, relying on their robust security infrastructure to keep your information safe.</p>
         `;
-        legalModal.style.display = 'block';
-    };
+            legalModal.style.display = 'block';
+        };
+    }
 
     signIn();
 
@@ -126,10 +153,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, e => { if (e.code === 1) showModal("Please enable location services."); }, { enableHighAccuracy: true });
     }
 
-    centerMapBtn.onclick = () => {
-        if (currentUserPosition) map.setView(currentUserPosition, 16);
-        else showModal("Finding your location...");
-    };
+    if (centerMapBtn) {
+        centerMapBtn.onclick = () => {
+            if (currentUserPosition) map.setView(currentUserPosition, 16);
+            else showModal("Finding your location...");
+        };
+    }
 
     function renderMarkers() {
         markers.forEach(m => map.removeLayer(m));
@@ -257,9 +286,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    discoverBtn.onclick = () => { setActiveButton(discoverBtn); content.innerHTML = '<p>Use the map to discover skate spots. Tap markers for details.</p>'; };
+    if (discoverBtn) {
+        discoverBtn.onclick = () => { setActiveButton(discoverBtn); content.innerHTML = '<p>Use the map to discover skate spots. Tap markers for details.</p>'; };
+    }
 
-    addSpotBtn.onclick = () => {
+    if (addSpotBtn) {
+        addSpotBtn.onclick = () => {
         setActiveButton(addSpotBtn);
         recordedVideoUrl = null;
         const lat = currentUserPosition ? currentUserPosition[0].toFixed(6) : '';
@@ -294,13 +326,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await addDoc(collection(db, `/artifacts/${appId}/public/data/skate_spots`), newSpot);
                 await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), { spotsAdded: increment(1), xp: increment(100) });
                 showModal('Spot added! You earned 100 XP!');
-                discoverBtn.click();
+                if (discoverBtn) discoverBtn.click();
             } catch (error) { console.error("Error adding spot: ", error); showModal("Failed to add spot."); }
         };
-    };
+        };
+    }
 
     async function openCamera() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return showModal("Camera not supported on your browser.");
+        if (!cameraModal || !cameraPreview || !recordBtn || !stopRecordBtn || !saveVideoBtn) {
+            return showModal("Camera UI not available.");
+        }
         try {
             videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
             cameraModal.style.display = "block";
@@ -311,24 +347,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { console.error("Camera Error:", err); showModal("Could not access camera. Please check permissions."); }
     }
 
-    recordBtn.onclick = () => {
-        recordedChunks = [];
-        mediaRecorder = new MediaRecorder(videoStream);
-        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
-        mediaRecorder.onstop = () => {
-            const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-            cameraPreview.srcObject = null;
-            cameraPreview.src = URL.createObjectURL(videoBlob);
-            saveVideoBtn.style.display = 'inline-block';
+    if (recordBtn) {
+        recordBtn.onclick = () => {
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(videoStream);
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                if (cameraPreview) {
+                    cameraPreview.srcObject = null;
+                    cameraPreview.src = URL.createObjectURL(videoBlob);
+                }
+                if (saveVideoBtn) saveVideoBtn.style.display = 'inline-block';
+            };
+            mediaRecorder.start();
+            recordBtn.style.display = 'none';
+            if (stopRecordBtn) stopRecordBtn.style.display = 'inline-block';
         };
-        mediaRecorder.start();
-        recordBtn.style.display = 'none';
-        stopRecordBtn.style.display = 'inline-block';
-    };
+    }
 
-    stopRecordBtn.onclick = () => { mediaRecorder.stop(); stopRecordBtn.style.display = 'none'; };
+    if (stopRecordBtn) {
+        stopRecordBtn.onclick = () => { mediaRecorder.stop(); stopRecordBtn.style.display = 'none'; };
+    }
     
-    saveVideoBtn.onclick = async () => {
+    if (saveVideoBtn) {
+        saveVideoBtn.onclick = async () => {
         showModal("Uploading video...");
         const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
         const videoFileName = `${currentUserId}_${Date.now()}.webm`;
@@ -343,15 +386,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error("Upload failed", error);
             showModal("Video upload failed. Please try again. (Note: Storage setup may be incomplete).");
         }
-    };
+        };
+    }
 
     function closeCamera() {
         if (videoStream) {
             videoStream.getTracks().forEach(track => track.stop());
         }
-        cameraModal.style.display = "none";
-        cameraPreview.srcObject = null;
-        cameraPreview.src = '';
+        if (cameraModal) cameraModal.style.display = "none";
+        if (cameraPreview) {
+            cameraPreview.srcObject = null;
+            cameraPreview.src = '';
+        }
     }
 
     function renderProfile() {
@@ -359,5 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         content.innerHTML = `<h3>${userProfile.username || 'Skater'}'s Profile</h3><p><strong>User ID:</strong> ${currentUserId}</p><p>Level: ${userProfile.level || 1}</p><p>XP: ${userProfile.xp || 0} / ${xpNext}</p><progress value="${userProfile.xp || 0}" max="${xpNext}"></progress><p>Spots Added: ${userProfile.spotsAdded || 0}</p><p>Challenges Completed: ${userProfile.challengesCompleted ? userProfile.challengesCompleted.length : 0}</p>`;
     }
 
-    profileBtn.onclick = () => { setActiveButton(profileBtn); renderProfile(); };
+    if (profileBtn) {
+        profileBtn.onclick = () => { setActiveButton(profileBtn); renderProfile(); };
+    }
 });

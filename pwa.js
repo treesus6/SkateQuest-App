@@ -32,12 +32,22 @@
     return btn;
   }
 
-  // Service worker registration
+  // Service worker registration - DISABLED FOR DEBUGGING
+  // if ('serviceWorker' in navigator) {
+  //   window.addEventListener('load', () => {
+  //     navigator.serviceWorker.register('/service-worker.js')
+  //       .then(reg => console.log('SW registered', reg.installing || reg.waiting || reg.active))
+  //       .catch(err => console.warn('SW reg failed', err));
+  //   });
+  // }
+  
+  // Unregister any existing service workers
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('SW registered', reg.installing || reg.waiting || reg.active))
-        .catch(err => console.warn('SW reg failed', err));
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      registrations.forEach(reg => {
+        reg.unregister();
+        console.log('Unregistered service worker');
+      });
     });
   }
 
