@@ -32,22 +32,18 @@
     return btn;
   }
 
-  // Service worker registration - DISABLED FOR DEBUGGING
-  // if ('serviceWorker' in navigator) {
-  //   window.addEventListener('load', () => {
-  //     navigator.serviceWorker.register('/service-worker.js')
-  //       .then(reg => console.log('SW registered', reg.installing || reg.waiting || reg.active))
-  //       .catch(err => console.warn('SW reg failed', err));
-  //   });
-  // }
-  
-  // Unregister any existing service workers
+  // Service worker registration for PWA functionality
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      registrations.forEach(reg => {
-        reg.unregister();
-        console.log('Unregistered service worker');
-      });
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => {
+          console.log('✓ Service Worker registered', reg.scope);
+          // Check for updates periodically
+          setInterval(() => {
+            reg.update();
+          }, 60000); // Check every minute
+        })
+        .catch(err => console.warn('SW registration failed', err));
     });
   }
 
