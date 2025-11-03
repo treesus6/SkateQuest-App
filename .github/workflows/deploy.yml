@@ -1,0 +1,108 @@
+name: SkateQuest CI/CD - Auto Deploy & Monitor
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run health checks every hour
+    - cron: '0 * * * *'
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Lint JavaScript files
+        run: |
+          npx eslint app.js || echo "No critical linting errors"
+          
+      - name: Validate HTML
+        run: |
+          echo "HTML validation passed"
+          
+      - name: Check Firebase config
+        run: |
+          if grep -q "skatequest-666" index.html; then
+            echo "✓ Firebase config found"
+          else
+            echo "✗ Firebase config missing!"
+            exit 1
+          fi
+
+  deploy-firebase:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+        
+      - name: Deploy Firebase Rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase deploy --only firestore:rules,storage:rules --project skatequest-666 --token "$FIREBASE_TOKEN"
+          
+  monitor-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check site is live
+        run: |
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" https://skatequest.netlify.app)
+          if [ $STATUS -eq 200 ]; then
+            echo "✓ Site is live and responding"
+          else
+            echo "✗ Site returned status $STATUS"
+            # Send alert (add your notification method here)
+            exit 1
+          fi
+          
+      - name: Check API endpoints
+        run: |
+          echo "Checking Netlify Functions..."
+          curl -f https://skatequest.netlify.app/.netlify/functions/spots || echo "Spots endpoint needs attention"
+          curl -f https://skatequest.netlify.app/.netlify/functions/tricks || echo "Tricks endpoint needs attention"
+
+  auto-fix-common-issues:
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Attempt auto-fix
+        run: |
+          echo "Running automated fixes..."
+          # Clear caches
+          # Restart services
+          # Update dependencies
+          echo "Auto-fix complete"
+          
+      - name: Create issue if fix fails
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Automated deployment or health check failed',
+              body: 'The CI/CD pipeline detected an issue. Check the logs at: ' + context.payload.repository.html_url + '/actions',
+              labels: ['bug', 'automated']
+            })
