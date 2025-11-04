@@ -33,5 +33,5 @@ jobs:
         run: |
           firebase deploy \
             --only firestore:rules,storage:rules \
-            --project skatequest-666 \
+            --project ${{ vars.FIREBASE_PROJECT_ID }} \
             --token "$FIREBASE_TOKEN"
