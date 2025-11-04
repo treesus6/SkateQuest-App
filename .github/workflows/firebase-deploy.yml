@@ -12,6 +12,8 @@ jobs:
   deploy:
     name: Deploy Firestore + Storage Rules
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: 📦 Checkout repository
