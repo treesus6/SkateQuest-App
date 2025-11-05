@@ -2,7 +2,9 @@
 
 ## ✅ STEP 1: Deploy Firebase Rules (2 minutes)
 
-**Go here:** https://console.firebase.google.com/project/skatequest-666/firestore/rules
+**Go here:** https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/firestore/rules
+
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
 
 1. Click the link above
 2. You'll see a code editor
@@ -12,7 +14,9 @@
 6. Click **"Publish"** button (blue button, top right)
 7. ✅ Done!
 
-**Then go here:** https://console.firebase.google.com/project/skatequest-666/storage/rules
+**Then go here:** https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/storage/rules
+
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
 
 1. Click the link above
 2. You'll see another code editor  
@@ -63,6 +67,13 @@ Copy the token it prints.
 3. Name: `FIREBASE_TOKEN`
 4. Value: Paste the token from above
 5. Click **"Add secret"**
+
+**Add Firebase Project ID:**
+1. Go to: https://github.com/treesus6/SkateQuest-App/settings/variables/actions
+2. Click **"New repository variable"**
+3. Name: `FIREBASE_PROJECT_ID`
+4. Value: Your Firebase project ID (e.g., skatequest-666)
+5. Click **"Add variable"**
 6. ✅ Done!
 
 **What this does:**
@@ -90,7 +101,9 @@ Go show sponsors! 🛹
 
 ## 🆘 Need Help?
 
-**Firebase Console:** https://console.firebase.google.com/project/skatequest-666
+**Firebase Console:** https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}
+
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
 **Netlify Dashboard:** https://app.netlify.com
 **GitHub Actions:** https://github.com/treesus6/SkateQuest-App/actions
 

@@ -12,11 +12,15 @@ cd /workspaces/SkateQuest-App
 This will prompt you to login to Firebase once, then deploy everything automatically.
 
 **Option B: Manual (If script fails)**
-1. Go to: https://console.firebase.google.com/project/skatequest-666/firestore/rules
+1. Go to: https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/firestore/rules
+
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
 2. Copy entire contents of `firestore.rules` file
 3. Paste into the editor
 4. Click "Publish"
-5. Go to: https://console.firebase.google.com/project/skatequest-666/storage/rules
+5. Go to: https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/storage/rules
+
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
 6. Copy entire contents of `storage.rules` file
 7. Paste into the editor
 8. Click "Publish"
@@ -48,7 +52,14 @@ Copy the token it gives you.
    - Value: (paste the token from step 1)
    - Click "Add secret"
 
-3. GitHub Actions will now:
+3. Add Firebase Project ID to GitHub:
+   - Go to: https://github.com/treesus6/SkateQuest-App/settings/variables/actions
+   - Click "New repository variable"
+   - Name: `FIREBASE_PROJECT_ID`
+   - Value: Your Firebase project ID (e.g., skatequest-666)
+   - Click "Add variable"
+
+4. GitHub Actions will now:
    - ✅ Auto-deploy Firebase rules on every push
    - ✅ Check site health every hour
    - ✅ Create GitHub issues if problems detected
@@ -97,26 +108,28 @@ Already included in your Firebase setup! Errors are logged automatically.
 
 ## 🔧 Your Firebase Console Links
 
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
+
 **Main Dashboard:**
-https://console.firebase.google.com/project/skatequest-666
+https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}
 
 **Firestore Database:**
-https://console.firebase.google.com/project/skatequest-666/firestore
+https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/firestore
 
 **Storage:**
-https://console.firebase.google.com/project/skatequest-666/storage
+https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/storage
 
 **Authentication:**
-https://console.firebase.google.com/project/skatequest-666/authentication
+https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/authentication
 
 **Rules (Firestore):**
-https://console.firebase.google.com/project/skatequest-666/firestore/rules
+https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/firestore/rules
 
 **Rules (Storage):**
-https://console.firebase.google.com/project/skatequest-666/storage/rules
+https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/storage/rules
 
 **Analytics:**
-https://console.firebase.google.com/project/skatequest-666/analytics
+https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/analytics
 
 ---
 
@@ -167,7 +180,9 @@ https://sk8quest.com
 
 ## 💡 Pro Tips
 
-- **Monitor your Firebase usage**: https://console.firebase.google.com/project/skatequest-666/usage
+- **Monitor your Firebase usage**: https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/usage
+
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
 - **Check Netlify analytics**: https://app.netlify.com
 - **Review GitHub Actions**: https://github.com/treesus6/SkateQuest-App/actions
 - **Star your repo**: Makes it easier to find and shows activity
@@ -179,8 +194,15 @@ https://sk8quest.com
 **If Firebase deploy fails:**
 ```bash
 firebase login
-firebase use skatequest-666
+firebase use ${FIREBASE_PROJECT_ID}  # Replace with your project ID
 firebase deploy --only firestore:rules,storage:rules
+```
+
+Or set environment variables for deploy.sh:
+```bash
+export FIREBASE_PROJECT_ID=your-project-id
+export FIREBASE_TOKEN=your-firebase-token
+./deploy.sh
 ```
 
 **If domain doesn't work:**

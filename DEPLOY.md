@@ -2,6 +2,24 @@
 
 This repository is a static site (HTML/CSS/JS) and is ready to deploy to Netlify.
 
+## GitHub Actions Configuration
+
+To enable automated Firebase deployments via GitHub Actions:
+
+### 1. Add FIREBASE_TOKEN Secret
+- Go to **Settings → Secrets and variables → Actions → Secrets**
+- Click "New repository secret"
+- **Name**: `FIREBASE_TOKEN`
+- **Value**: Run `firebase login:ci` to get your token
+
+### 2. Add FIREBASE_PROJECT_ID Variable
+- Go to **Settings → Secrets and variables → Actions → Variables**
+- Click "New repository variable"
+- **Name**: `FIREBASE_PROJECT_ID`
+- **Value**: Your Firebase project ID (e.g., skatequest-666)
+
+The GitHub Actions workflow (`.github/workflows/firebase-deploy.yml`) will automatically deploy Firebase rules when you push to the main branch.
+
 Quick notes:
 - The site is served from the project root (publish directory = `.`).
 - Netlify Functions live in `netlify/functions/` and are deployed automatically when the site is published from the repository root.
