@@ -225,6 +225,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Helper function to escape HTML to prevent XSS
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Render skate shop markers on the map
     function renderShopMarkers() {
         // Remove existing shop markers
@@ -248,11 +256,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         
                 let popupContent = `
                     <div style="min-width:200px;">
-                        <h3 style="margin:0 0 10px 0;color:#4CAF50;">🛹 ${shop.name}</h3>
-                        ${shop.address ? `<p style="margin:5px 0;"><strong>📍 Address:</strong><br/>${shop.address}</p>` : ''}
-                        ${shop.phone ? `<p style="margin:5px 0;"><strong>📞 Phone:</strong><br/><a href="tel:${shop.phone}">${shop.phone}</a></p>` : ''}
-                        ${shop.website ? `<p style="margin:5px 0;"><strong>🌐 Website:</strong><br/><a href="${shop.website}" target="_blank" rel="noopener">${shop.website}</a></p>` : ''}
-                        ${shop.hours ? `<p style="margin:5px 0;"><strong>🕐 Hours:</strong><br/>${shop.hours}</p>` : ''}
+                        <h3 style="margin:0 0 10px 0;color:#4CAF50;">🛹 ${escapeHtml(shop.name)}</h3>
+                        ${shop.address ? `<p style="margin:5px 0;"><strong>📍 Address:</strong><br/>${escapeHtml(shop.address)}</p>` : ''}
+                        ${shop.phone ? `<p style="margin:5px 0;"><strong>📞 Phone:</strong><br/><a href="tel:${escapeHtml(shop.phone)}">${escapeHtml(shop.phone)}</a></p>` : ''}
+                        ${shop.website ? `<p style="margin:5px 0;"><strong>🌐 Website:</strong><br/><a href="${escapeHtml(shop.website)}" target="_blank" rel="noopener">${escapeHtml(shop.website)}</a></p>` : ''}
+                        ${shop.hours ? `<p style="margin:5px 0;"><strong>🕐 Hours:</strong><br/>${escapeHtml(shop.hours)}</p>` : ''}
                         ${shop.verified ? '<p style="margin:5px 0;color:#4CAF50;">✓ Verified Shop</p>' : ''}
                     </div>
                 `;
@@ -546,18 +554,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        shopsItems.innerHTML = skateShops.map(shop => `
+        shopsItems.innerHTML = skateShops.map((shop, index) => `
             <div style="padding:1rem;margin-bottom:0.8rem;border:1px solid #ddd;border-radius:8px;background:#f9f9f9;">
-                <h4 style="margin:0 0 0.5rem 0;color:#4CAF50;">${shop.name}</h4>
-                ${shop.address ? `<p style="margin:0.3rem 0;">📍 ${shop.address}</p>` : ''}
-                ${shop.phone ? `<p style="margin:0.3rem 0;">📞 ${shop.phone}</p>` : ''}
-                ${shop.website ? `<p style="margin:0.3rem 0;">🌐 <a href="${shop.website}" target="_blank">${shop.website}</a></p>` : ''}
-                ${shop.hours ? `<p style="margin:0.3rem 0;">🕐 ${shop.hours}</p>` : ''}
-                <button onclick="map.setView([${shop.coords.latitude}, ${shop.coords.longitude}], 16);" style="margin-top:0.5rem;padding:0.4rem 0.8rem;background:#d2673d;color:white;border:none;border-radius:6px;cursor:pointer;">
+                <h4 style="margin:0 0 0.5rem 0;color:#4CAF50;">${escapeHtml(shop.name)}</h4>
+                ${shop.address ? `<p style="margin:0.3rem 0;">📍 ${escapeHtml(shop.address)}</p>` : ''}
+                ${shop.phone ? `<p style="margin:0.3rem 0;">📞 ${escapeHtml(shop.phone)}</p>` : ''}
+                ${shop.website ? `<p style="margin:0.3rem 0;">🌐 <a href="${escapeHtml(shop.website)}" target="_blank" rel="noopener">${escapeHtml(shop.website)}</a></p>` : ''}
+                ${shop.hours ? `<p style="margin:0.3rem 0;">🕐 ${escapeHtml(shop.hours)}</p>` : ''}
+                <button data-shop-index="${index}" class="view-shop-btn" style="margin-top:0.5rem;padding:0.4rem 0.8rem;background:#d2673d;color:white;border:none;border-radius:6px;cursor:pointer;">
                     View on Map
                 </button>
             </div>
         `).join('');
+        
+        // Add event listeners to view shop buttons
+        document.querySelectorAll('.view-shop-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                const shopIndex = parseInt(e.target.getAttribute('data-shop-index'));
+                const shop = skateShops[shopIndex];
+                if (shop && shop.coords) {
+                    map.setView([shop.coords.latitude, shop.coords.longitude], 16);
+                }
+            };
+        });
     }
 
     async function addShop() {
@@ -576,6 +595,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!name || !address || isNaN(lat) || isNaN(lng)) {
             showModal("Please fill out all required fields (Name, Address, Latitude, Longitude).");
+            return;
+        }
+
+        // Validate coordinate ranges
+        if (lat < -90 || lat > 90) {
+            showModal("Latitude must be between -90 and 90 degrees.");
+            return;
+        }
+        if (lng < -180 || lng > 180) {
+            showModal("Longitude must be between -180 and 180 degrees.");
             return;
         }
 
