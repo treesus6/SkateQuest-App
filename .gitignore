@@ -43,3 +43,7 @@ firestore-debug.log
 tmp/
 temp/
 *.tmp
+
+# Draft/untitled files
+Untitled-*
+Untitled*
