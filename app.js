@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 100);
     });
 
-    const { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, appId } = window.firebaseInstances;
+    const { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, appId, query, where, getDocs } = window.firebaseInstances;
 
     const map = L.map('map').setView([45.6387, -122.6615], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -460,11 +460,97 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderProfile() {
-        const xpNext = (userProfile.level || 1) * 100;
-        content.innerHTML = `<h3>${userProfile.username || 'Skater'}'s Profile</h3><p><strong>User ID:</strong> ${currentUserId}</p><p>Level: ${userProfile.level || 1}</p><p>XP: ${userProfile.xp || 0} / ${xpNext}</p><progress value="${userProfile.xp || 0}" max="${xpNext}"></progress><p>Spots Added: ${userProfile.spotsAdded || 0}</p><p>Challenges Completed: ${userProfile.challengesCompleted ? userProfile.challengesCompleted.length : 0}</p>`;
+        content.innerHTML = `
+            <h3>My Profile</h3>
+            <p><strong>Username:</strong> ${userProfile.username || 'Anonymous'}</p>
+            <p><strong>XP:</strong> ${userProfile.xp || 0}</p>
+            <p><strong>Spots Added:</strong> ${userProfile.spotsAdded || 0}</p>
+            <button id="callOutBtn">Call-Out User</button>
+            <div id="callOutFormContainer" style="display:none;">
+                <h4>Issue a Trick Call-Out</h4>
+                <form id="callOutForm">
+                    <label>Target Username:<br/><input type="text" id="targetUsername" required /></label>
+                    <label>Trick:<br/><input type="text" id="trickName" required /></label>
+                    <button type="submit">Send Call-Out</button>
+                </form>
+            </div>
+            <h4>My Call-Outs</h4>
+            <div id="callOutsList"></div>
+        `;
+
+        document.getElementById('callOutBtn').onclick = () => {
+            document.getElementById('callOutFormContainer').style.display = 'block';
+        };
+
+        document.getElementById('callOutForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const targetUsername = document.getElementById('targetUsername').value.trim();
+            const trickName = document.getElementById('trickName').value.trim();
+            if (!targetUsername || !trickName) return showModal("Please fill out all fields.");
+
+            try {
+                // Find user by username (requires a query)
+                const usersRef = collection(db, `/artifacts/${appId}/users`);
+                const q = query(usersRef, where("username", "==", targetUsername));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    return showModal("User not found.");
+                }
+
+                const targetUser = querySnapshot.docs[0];
+                const targetId = targetUser.id;
+
+                await addDoc(collection(db, `/artifacts/${appId}/trick_callouts`), {
+                    challengerId: currentUserId,
+                    challengerUsername: userProfile.username,
+                    targetId: targetId,
+                    targetUsername: targetUsername,
+                    trick: trickName,
+                    status: 'pending',
+                    createdAt: serverTimestamp()
+                });
+
+                showModal("Call-Out sent!");
+                document.getElementById('callOutFormContainer').style.display = 'none';
+            } catch (error) {
+                console.error("Error sending call-out: ", error);
+                showModal("Failed to send call-out.");
+            }
+        };
+
+        // Load and display call-outs
+        loadCallOuts();
     }
 
-    if (profileBtn) {
-        profileBtn.onclick = () => { setActiveButton(profileBtn); renderProfile(); };
+    async function loadCallOuts() {
+        const callOutsList = document.getElementById('callOutsList');
+        if (!callOutsList) return;
+
+        const sentQuery = query(collection(db, `/artifacts/${appId}/trick_callouts`), where("challengerId", "==", currentUserId));
+        const receivedQuery = query(collection(db, `/artifacts/${appId}/trick_callouts`), where("targetId", "==", currentUserId));
+
+        const [sentSnapshot, receivedSnapshot] = await Promise.all([getDocs(sentQuery), getDocs(receivedQuery)]);
+
+        let html = '<h4>Sent</h4><ul>';
+        sentSnapshot.forEach(doc => {
+            const callout = doc.data();
+            html += `<li>vs ${callout.targetUsername} - ${callout.trick} (${callout.status})</li>`;
+        });
+        html += '</ul><h4>Received</h4><ul>';
+        receivedSnapshot.forEach(doc => {
+            const callout = doc.data();
+            html += `<li>from ${callout.challengerUsername} - ${callout.trick} (${callout.status}) <button class="complete-callout" data-id="${doc.id}">Complete</button></li>`;
+        });
+        html += '</ul>';
+        callOutsList.innerHTML = html;
+
+        document.querySelectorAll('.complete-callout').forEach(button => {
+            button.onclick = (e) => {
+                const calloutId = e.target.dataset.id;
+                // Here you would trigger the video recording flow
+                showModal(`Completing call-out ${calloutId}... (video recording not implemented yet)`);
+            };
+        });
     }
 });
