@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     let skateSpots = [], userProfile = {}, markers = [];
+    let skateShops = [], shopMarkers = [];
+    let showShops = false;
     let currentUserId = null, userLocationMarker = null, currentUserPosition = null;
     let mediaRecorder, recordedChunks = [], recordedVideoUrl = null, videoStream = null;
     let mapClickToAdd = false, tempAddMarker = null;
@@ -35,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const content = document.getElementById('content');
     const discoverBtn = document.getElementById('discoverBtn');
     const addSpotBtn = document.getElementById('addSpotBtn');
+    const shopsBtn = document.getElementById('shopsBtn');
     const profileBtn = document.getElementById('profileBtn');
     const centerMapBtn = document.getElementById('centerMapBtn');
     const legalBtn = document.getElementById('legalBtn');
@@ -49,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cancelCameraBtn = document.getElementById('cancelCameraBtn');
     const legalModal = document.getElementById('legalModal');
     const legalText = document.getElementById('legalText');
+    const shopsToggle = document.getElementById('shops-toggle');
 
     document.querySelectorAll('.close-button').forEach(btn => btn.onclick = () => {
         btn.closest('.modal').style.display = 'none';
@@ -64,11 +68,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     function setActiveButton(activeBtn) {
         if (!activeBtn) return;
-        [discoverBtn, addSpotBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
+        [discoverBtn, addSpotBtn, shopsBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
         activeBtn.classList.add('active');
     }
 
-    console.log('Button check:', {discoverBtn, addSpotBtn, profileBtn, legalBtn});
+    console.log('Button check:', {discoverBtn, addSpotBtn, shopsBtn, profileBtn, legalBtn});
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -146,6 +150,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!currentUserId) return;
         const spotsPath = `/artifacts/${appId}/public/data/skate_spots`;
         onSnapshot(collection(db, spotsPath), s => { skateSpots = []; s.forEach(d => skateSpots.push({ id: d.id, ...d.data() })); renderMarkers(); }, e => console.error(e));
+        
+        // Listen to skate shops collection
+        onSnapshot(collection(db, 'shops'), s => { 
+            skateShops = []; 
+            s.forEach(d => skateShops.push({ id: d.id, ...d.data() })); 
+            renderShopMarkers(); 
+        }, e => console.error('Error loading shops:', e));
+        
         const profilePath = `/artifacts/${appId}/users/${currentUserId}/profile/data`;
         onSnapshot(doc(db, profilePath), async d => {
             if (d.exists()) { userProfile = d.data(); } 
@@ -209,6 +221,44 @@ document.addEventListener('DOMContentLoaded', async () => {
                     };
                     renderChallengesForSpot(spot.id);
                 });
+            }
+        });
+    }
+
+    // Render skate shop markers on the map
+    function renderShopMarkers() {
+        // Remove existing shop markers
+        shopMarkers.forEach(m => map.removeLayer(m));
+        shopMarkers = [];
+        
+        // Only render if shops toggle is enabled
+        if (!showShops) return;
+        
+        skateShops.forEach(shop => {
+            if (shop.coords && shop.coords.latitude && shop.coords.longitude) {
+                // Create custom icon for shops (different from skate spots)
+                const shopIcon = L.divIcon({
+                    className: 'shop-marker',
+                    html: '<div style="background:#4CAF50;width:30px;height:30px;border-radius:50%;border:3px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><span style="color:white;font-size:18px;">🛒</span></div>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                
+                const marker = L.marker([shop.coords.latitude, shop.coords.longitude], { icon: shopIcon }).addTo(map);
+        
+                let popupContent = `
+                    <div style="min-width:200px;">
+                        <h3 style="margin:0 0 10px 0;color:#4CAF50;">🛹 ${shop.name}</h3>
+                        ${shop.address ? `<p style="margin:5px 0;"><strong>📍 Address:</strong><br/>${shop.address}</p>` : ''}
+                        ${shop.phone ? `<p style="margin:5px 0;"><strong>📞 Phone:</strong><br/><a href="tel:${shop.phone}">${shop.phone}</a></p>` : ''}
+                        ${shop.website ? `<p style="margin:5px 0;"><strong>🌐 Website:</strong><br/><a href="${shop.website}" target="_blank" rel="noopener">${shop.website}</a></p>` : ''}
+                        ${shop.hours ? `<p style="margin:5px 0;"><strong>🕐 Hours:</strong><br/>${shop.hours}</p>` : ''}
+                        ${shop.verified ? '<p style="margin:5px 0;color:#4CAF50;">✓ Verified Shop</p>' : ''}
+                    </div>
+                `;
+        
+                marker.bindPopup(popupContent);
+                shopMarkers.push(marker);
             }
         });
     }
@@ -389,6 +439,180 @@ document.addEventListener('DOMContentLoaded', async () => {
             setActiveButton(addSpotBtn);
             content.innerHTML = '<p>Click anywhere on the map to add a new spot. Click the "Add Spot" button again to cancel.</p>';
         };
+    }
+
+    // Shops button handler
+    if (shopsBtn) {
+        shopsBtn.onclick = () => {
+            setActiveButton(shopsBtn);
+            renderShopsPanel();
+        };
+    }
+
+    // Shops toggle handler
+    if (shopsToggle) {
+        shopsToggle.onchange = () => {
+            showShops = shopsToggle.checked;
+            renderShopMarkers();
+        };
+    }
+
+    function renderShopsPanel() {
+        content.innerHTML = `
+            <div style="padding:1rem;">
+                <h2>🛹 Skate Shops</h2>
+                <p>Discover local skate shops near you!</p>
+                
+                <div style="margin-bottom:1rem;">
+                    <label style="display:flex;align-items:center;gap:0.5rem;">
+                        <input type="checkbox" id="toggle-shops-panel" ${showShops ? 'checked' : ''} />
+                        Show shops on map
+                    </label>
+                </div>
+
+                <div id="shops-list" style="margin-top:1rem;">
+                    <h3>Nearby Shops</h3>
+                    <div id="shops-items"></div>
+                </div>
+
+                <hr style="margin:2rem 0;" />
+
+                <h3>Add a Skate Shop</h3>
+                <form id="add-shop-form" style="display:flex;flex-direction:column;gap:0.8rem;">
+                    <label>
+                        Shop Name *
+                        <input type="text" id="shop-name" required placeholder="e.g., Local Skate Shop" />
+                    </label>
+                    <label>
+                        Address *
+                        <input type="text" id="shop-address" required placeholder="123 Main St, Portland, OR" />
+                    </label>
+                    <label>
+                        Latitude *
+                        <input type="number" id="shop-lat" step="any" required placeholder="45.5231" />
+                    </label>
+                    <label>
+                        Longitude *
+                        <input type="number" id="shop-lng" step="any" required placeholder="-122.6765" />
+                    </label>
+                    <label>
+                        Phone
+                        <input type="tel" id="shop-phone" placeholder="(555) 123-4567" />
+                    </label>
+                    <label>
+                        Website
+                        <input type="url" id="shop-website" placeholder="https://example.com" />
+                    </label>
+                    <label>
+                        Hours
+                        <input type="text" id="shop-hours" placeholder="Mon-Fri 10am-8pm, Sat-Sun 11am-6pm" />
+                    </label>
+                    <button type="submit" style="background:#4CAF50;color:white;padding:0.8rem;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">
+                        Add Shop
+                    </button>
+                </form>
+            </div>
+        `;
+
+        // Hook up toggle in panel
+        const toggleShopsPanel = document.getElementById('toggle-shops-panel');
+        if (toggleShopsPanel) {
+            toggleShopsPanel.onchange = () => {
+                showShops = toggleShopsPanel.checked;
+                if (shopsToggle) shopsToggle.checked = showShops;
+                renderShopMarkers();
+            };
+        }
+
+        // Display shops list
+        renderShopsList();
+
+        // Handle form submission
+        const form = document.getElementById('add-shop-form');
+        if (form) {
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                await addShop();
+            };
+        }
+    }
+
+    function renderShopsList() {
+        const shopsItems = document.getElementById('shops-items');
+        if (!shopsItems) return;
+
+        if (skateShops.length === 0) {
+            shopsItems.innerHTML = '<p style="color:#666;">No shops added yet. Be the first to add one!</p>';
+            return;
+        }
+
+        shopsItems.innerHTML = skateShops.map(shop => `
+            <div style="padding:1rem;margin-bottom:0.8rem;border:1px solid #ddd;border-radius:8px;background:#f9f9f9;">
+                <h4 style="margin:0 0 0.5rem 0;color:#4CAF50;">${shop.name}</h4>
+                ${shop.address ? `<p style="margin:0.3rem 0;">📍 ${shop.address}</p>` : ''}
+                ${shop.phone ? `<p style="margin:0.3rem 0;">📞 ${shop.phone}</p>` : ''}
+                ${shop.website ? `<p style="margin:0.3rem 0;">🌐 <a href="${shop.website}" target="_blank">${shop.website}</a></p>` : ''}
+                ${shop.hours ? `<p style="margin:0.3rem 0;">🕐 ${shop.hours}</p>` : ''}
+                <button onclick="map.setView([${shop.coords.latitude}, ${shop.coords.longitude}], 16);" style="margin-top:0.5rem;padding:0.4rem 0.8rem;background:#d2673d;color:white;border:none;border-radius:6px;cursor:pointer;">
+                    View on Map
+                </button>
+            </div>
+        `).join('');
+    }
+
+    async function addShop() {
+        if (!currentUserId) {
+            showModal("You must be signed in to add a shop.");
+            return;
+        }
+
+        const name = document.getElementById('shop-name').value.trim();
+        const address = document.getElementById('shop-address').value.trim();
+        const lat = parseFloat(document.getElementById('shop-lat').value);
+        const lng = parseFloat(document.getElementById('shop-lng').value);
+        const phone = document.getElementById('shop-phone').value.trim();
+        const website = document.getElementById('shop-website').value.trim();
+        const hours = document.getElementById('shop-hours').value.trim();
+
+        if (!name || !address || isNaN(lat) || isNaN(lng)) {
+            showModal("Please fill out all required fields (Name, Address, Latitude, Longitude).");
+            return;
+        }
+
+        try {
+            const shopData = {
+                name,
+                address,
+                coords: {
+                    latitude: lat,
+                    longitude: lng
+                },
+                phone: phone || null,
+                website: website || null,
+                hours: hours || null,
+                addedBy: currentUserId,
+                verified: false,
+                createdAt: serverTimestamp()
+            };
+
+            await addDoc(collection(db, 'shops'), shopData);
+            showModal("Shop added successfully!");
+            
+            // Clear form
+            document.getElementById('add-shop-form').reset();
+            
+            // Refresh shops list
+            renderShopsList();
+            
+            // Enable shops on map
+            showShops = true;
+            if (shopsToggle) shopsToggle.checked = true;
+            renderShopMarkers();
+
+        } catch (error) {
+            console.error("Error adding shop:", error);
+            showModal("Failed to add shop. Please try again.");
+        }
     }
 
     async function openCamera() {
