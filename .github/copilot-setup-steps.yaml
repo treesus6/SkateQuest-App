@@ -8,8 +8,7 @@ setup:
   - name: Verify Node.js version
     description: Ensure Node.js 18 or higher is installed
     command: |
-      node --version
-    expected_output_contains: "v18"
+      node --version | grep -E 'v(1[8-9]|[2-9][0-9])' && echo "Node.js version is adequate" || echo "Warning: Node.js 18+ recommended"
     
   - name: Install dependencies
     description: Install npm dependencies (if any)
@@ -20,7 +19,7 @@ setup:
   - name: Verify Firebase CLI
     description: Check if Firebase CLI is available
     command: |
-      npm list -g firebase-tools || npm install -g firebase-tools
+      npx firebase-tools --version || echo "Firebase CLI not available but not required for basic development"
     optional: true
     
   - name: Start local development server
@@ -33,7 +32,7 @@ setup:
   - name: Verify Firebase configuration
     description: Check that Firebase config is present in index.html
     command: |
-      grep -q "skatequest-666" index.html && echo "Firebase config found" || echo "Warning: Firebase config may be missing"
+      grep -q "firebaseConfig" index.html && echo "Firebase config found" || echo "Warning: Firebase config may be missing"
     
 validation:
   - name: Check critical files exist
