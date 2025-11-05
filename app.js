@@ -180,6 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
                 let popupContent = `
                     <strong>${spot.name}</strong><br/>
+                    ${spot.imageUrl ? `<img src="${spot.imageUrl}" alt="${spot.name}" style="max-width:150px;border-radius:8px;margin-top:5px;"/><br/>` : ''}
                     Difficulty: ${spot.difficulty}<br/>
                     Tricks: ${spot.tricks ? spot.tricks.join(', ') : 'None'}<br/>
                     ${spot.videoUrl ? `<br/><video src="${spot.videoUrl}" controls></video><br/>` : ''}
@@ -314,6 +315,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <label>Longitude:<br/><input type="number" step="any" id="spotLng" value="${lng}" required /></label>
                 <label>Difficulty:<br/><select id="spotDifficulty"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label>
                 <label>Tricks (comma separated):<br/><input type="text" id="spotTricks" /></label>
+                <label>Photo (optional):<br/><input type="file" id="spotImageInput" accept="image/*" /></label>
+                <div id="spotImagePreview"></div>
                 <button type="button" id="recordVideoBtn">Record Trick 🎥</button>
                 <div id="videoStatus"></div>
                 <button type="submit">Add Spot</button>
@@ -327,6 +330,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             content.innerHTML = ''; 
             setActiveButton(discoverBtn); 
         };
+
+        // Spot image handling
+        const spotImageInput = document.getElementById('spotImageInput');
+        const spotImagePreview = document.getElementById('spotImagePreview');
+        let selectedSpotImageFile = null;
+        spotImageInput.onchange = (ev) => {
+            const f = ev.target.files && ev.target.files[0];
+            if (!f) { selectedSpotImageFile = null; spotImagePreview.innerHTML = ''; return; }
+            // quick client-side checks
+            if (f.size > 5 * 1024 * 1024) { showModal('Image too large (max 5MB).'); spotImageInput.value = ''; selectedSpotImageFile = null; spotImagePreview.innerHTML = ''; return; }
+            if (!f.type.startsWith('image/')) { showModal('Only image files are allowed.'); spotImageInput.value = ''; selectedSpotImageFile = null; spotImagePreview.innerHTML = ''; return; }
+            selectedSpotImageFile = f;
+            spotImagePreview.innerHTML = `<img src="${URL.createObjectURL(f)}" style="max-width:200px;border-radius:8px;margin-top:0.5em;"/>`;
+        };
+
         document.getElementById('addSpotForm').onsubmit = async (e) => {
             e.preventDefault();
             if (!currentUserId) return showModal("You must be signed in.");
@@ -339,6 +357,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ...(recordedVideoUrl && { videoUrl: recordedVideoUrl })
             };
             try {
+                // If a spot image was selected, upload it first and attach URL
+                if (selectedSpotImageFile) {
+                    const imgName = `${currentUserId}/${Date.now()}_${selectedSpotImageFile.name}`;
+                    const imgRef = ref(storage, `spot_images/${imgName}`);
+                    const uploadResult = await uploadBytes(imgRef, selectedSpotImageFile);
+                    newSpot.imageUrl = await getDownloadURL(uploadResult.ref);
+                }
+
                 await addDoc(collection(db, `/artifacts/${appId}/public/data/skate_spots`), newSpot);
                 await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), { spotsAdded: increment(1), xp: increment(100) });
                 showModal('Spot added! You earned 100 XP!');
