@@ -3,6 +3,24 @@ SkateQuest — Deploying to Netlify
 This folder contains a static site (HTML, CSS, JS) for SkateQuest.
 Use one of the methods below to deploy to Netlify.
 
+## Setting up GitHub Actions Secrets and Variables
+
+To enable automated Firebase deployments via GitHub Actions, configure these secrets and variables:
+
+### Required Secrets
+1. Go to your repository's **Settings → Secrets and variables → Actions → Secrets**
+2. Add a new secret:
+   - **Name**: `FIREBASE_TOKEN`
+   - **Value**: Get your token by running `firebase login:ci` in your terminal
+   
+### Required Variables
+1. Go to your repository's **Settings → Secrets and variables → Actions → Variables**
+2. Add a new variable:
+   - **Name**: `FIREBASE_PROJECT_ID`
+   - **Value**: Your Firebase project ID (e.g., skatequest-666)
+
+Once configured, the GitHub Actions workflow will automatically deploy Firebase security rules when you push to the main branch.
+
 Quick options
 
 1) Drag & Drop (fastest)

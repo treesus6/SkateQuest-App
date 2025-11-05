@@ -21,7 +21,9 @@
 #### 1. Deploy Firebase Security Rules
 Since Firebase CLI is not configured locally, deploy rules manually:
 
-1. Go to [Firebase Console](https://console.firebase.google.com/project/skatequest-666)
+1. Go to [Firebase Console](https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID})
+
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
 2. Navigate to **Firestore Database** → **Rules**
 3. Copy contents from `firestore.rules` and deploy
 4. Navigate to **Storage** → **Rules**  
@@ -55,9 +57,11 @@ Since Firebase CLI is not configured locally, deploy rules manually:
 - **CDN**: Firebase CDN for JS libraries
 
 ### Firebase Project
-- **Project ID**: skatequest-666
-- **Auth Domain**: skatequest-666.firebaseapp.com
-- **Storage Bucket**: skatequest-666.firebasestorage.app
+- **Project ID**: Your Firebase project ID (e.g., skatequest-666)
+- **Auth Domain**: ${your-project-id}.firebaseapp.com
+- **Storage Bucket**: ${your-project-id}.firebasestorage.app
+
+Set FIREBASE_PROJECT_ID in GitHub Actions → Settings → Variables to configure for automated deploys.
 
 ### Key Files
 - `index.html` - Main app entry point
@@ -117,7 +121,9 @@ Since Firebase CLI is not configured locally, deploy rules manually:
 ### Firebase Analytics
 - Enabled: `getAnalytics(app)`
 - Tracks: Page views, user engagement, conversions
-- View: [Firebase Analytics Dashboard](https://console.firebase.google.com/project/skatequest-666/analytics)
+- View: [Firebase Analytics Dashboard](https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/analytics)
+
+(Replace ${FIREBASE_PROJECT_ID} with your actual Firebase project ID)
 
 ### Netlify Analytics
 - Track: Traffic, geographic distribution, popular pages

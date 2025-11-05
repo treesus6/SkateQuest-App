@@ -181,6 +181,8 @@
             import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
             import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
+            // Firebase config - these values are public and safe to expose in client code
+            // Server-side deploys use FIREBASE_TOKEN and FIREBASE_PROJECT_ID from GitHub Actions secrets/variables
             const firebaseConfig = {
                 apiKey: "AIzaSyBd55v6rN7ngtaoXIwuQb0lHy0p8_69dzU",
                 authDomain: "skatequest-666.firebaseapp.com",
