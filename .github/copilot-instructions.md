@@ -33,6 +33,120 @@ SkateQuest-App/
 │   ├── workflows/          # GitHub Actions CI/CD workflows
 │   └── copilot-instructions.md
 ├── functions/              # Firebase Cloud Functions
+├── netlify/
+├── pages/
+├── scripts/
+├── icons/
+├── index.html
+├── main.js
+├── app.js
+├── style.css
+├── pwa.js
+├── service-worker.js
+├── manifest.json
+├── firebase.json
+└── package.json
+```
+
+## Key Files and Their Purpose
+
+- `index.html`: Main entry point with Firebase SDK loaded via CDN
+- `main.js`: Core app logic including challenge system, spot/trick selection, API helpers
+- `app.js`: Extended functionality for user features
+- `service-worker.js`: Caches assets for offline functionality
+- `firestore.rules`: Security rules for Firestore database access
+- `functions/index.js`: Cloud Functions for secure backend operations (e.g., `completeChallenge`)
+
+## How Copilot Coding Agent should behave in this repo
+
+Use these instructions to guide the Copilot coding agent when contributing to or editing this repository.
+
+- Repository type: static web app (Vanilla JS) + Firebase backend + Netlify functions.
+- Avoid adding build tools or frameworks. Keep changes lightweight and compatible with static hosting.
+- When adding runtime code that depends on Firebase, use the `window.firebaseInstances` pattern used throughout the repo (Firebase SDKs are loaded via CDN in the browser).
+- Prefer small, incremental commits that are easy to review.
+- For any operation that modifies Firestore or awards XP, prefer adding or updating a Cloud Function in `functions/` or `netlify/functions/` and ensure proper auth checks in server-side code.
+
+### Safety and Secrets
+
+- Do not add secrets or private credentials to the repository. Firebase config in `index.html` is expected to be client-safe and protected by Firestore rules.
+- For CI tokens, use GitHub Actions secrets.
+
+### Testing and Validation
+
+- This is primarily a static site—manual browser testing is expected. Recommended local dev steps are in `START.md` and `DEPLOY.md`.
+- Quick local server commands (examples):
+  - `python3 -m http.server 8000` or `npm run serve-local` if present.
+- When adding JS code, prefer small unit tests if a test harness is added; otherwise, add a short manual test checklist in the PR description.
+
+### Linting and Formatting
+
+- Keep code ES6+ and consistent with the existing style (no transpilation). Use `npx eslint` where configured.
+
+### Cloud Functions
+
+- Use Node.js 18 runtime. Keep functions minimal and validate user identity before any sensitive operation.
+
+## Onboarding checklist for new contributors (Copilot agent helpers)
+
+1. Read `README.md`, `START.md`, and `DEPLOY.md`.
+2. Inspect `index.html` to understand Firebase initialization and `window.firebaseInstances` usage.
+3. Run a quick local server and open the app to smoke test UI changes.
+4. If changing rules, run `firebase emulators:start` locally (if contributors have emulators configured) and validate.
+
+## Guidance for PRs created by the agent
+
+- Include a brief summary of changes and a short QA checklist.
+- If touching Cloud Functions or Firestore rules, include rationale for security considerations and suggested testing steps.
+
+## Troubleshooting / Common fixes
+
+- If service worker caching causes stale assets, increment the cache name in `service-worker.js` and mention the change in the PR. See `clear-cache.html` for local cache clearing hints.
+- If Firebase connectivity fails, validate the project config in `index.html` and check console errors.
+
+## Contact / References
+
+- Repository: https://github.com/treesus6/SkateQuest-App
+- Firebase project (for maintainers): skatequest-666
+
+---
+
+This file is intentionally concise and focused on actionable guidance for an automated coding agent and human contributors. Keep it updated if project structure or workflows change.
+# SkateQuest - Copilot Instructions
+
+## Project Overview
+
+SkateQuest is a Progressive Web App (PWA) that helps skateboarders discover, share, and track local skating spots. Users can join challenges, earn badges and XP, and connect with the skating community.
+
+## Technology Stack
+
+### Frontend
+- **HTML/CSS/JavaScript**: Vanilla JavaScript (no framework) with modern ES6+ features
+- **Leaflet.js**: Interactive mapping library for displaying skate spots
+- **PWA**: Progressive Web App with service worker and manifest
+- **Firebase SDK**: Client-side Firebase integration via CDN
+
+### Backend
+- **Firebase**: Backend-as-a-Service
+  - Firestore: NoSQL database for spots, challenges, users, and leaderboards
+  - Firebase Storage: Image and media storage
+  - Firebase Authentication: User authentication
+  - Firebase Functions: Serverless cloud functions (Node.js 18)
+- **Netlify**: Static site hosting and serverless functions
+
+### Build & Deployment
+- **Netlify**: Primary hosting platform
+- **Firebase Hosting**: Alternative/supplementary hosting
+- **GitHub Actions**: CI/CD pipeline for automated deployment and monitoring
+
+## Project Structure
+
+```
+SkateQuest-App/
+├── .github/
+│   ├── workflows/          # GitHub Actions CI/CD workflows
+│   └── copilot-instructions.md
+├── functions/              # Firebase Cloud Functions
 │   ├── index.js           # Cloud Functions (completeChallenge, etc.)
 │   └── package.json
 ├── netlify/

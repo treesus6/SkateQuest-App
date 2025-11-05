@@ -17,9 +17,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
+    // When user clicks on the map while in add mode, show the add form at that coord
+    map.on('click', (e) => {
+        if (!mapClickToAdd) return;
+        const { lat, lng } = e.latlng;
+        // add or move temporary marker
+        if (!tempAddMarker) tempAddMarker = L.marker([lat, lng]).addTo(map);
+        else tempAddMarker.setLatLng([lat, lng]);
+        showAddSpotForm(lat.toFixed(6), lng.toFixed(6));
+    });
+
     let skateSpots = [], userProfile = {}, markers = [];
     let currentUserId = null, userLocationMarker = null, currentUserPosition = null;
     let mediaRecorder, recordedChunks = [], recordedVideoUrl = null, videoStream = null;
+    let mapClickToAdd = false, tempAddMarker = null;
 
     const content = document.getElementById('content');
     const discoverBtn = document.getElementById('discoverBtn');
@@ -290,15 +301,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         discoverBtn.onclick = () => { setActiveButton(discoverBtn); content.innerHTML = '<p>Use the map to discover skate spots. Tap markers for details.</p>'; };
     }
 
-    if (addSpotBtn) {
-        addSpotBtn.onclick = () => {
+    // Helper to show the Add Spot form for given coordinates
+    function showAddSpotForm(lat = '', lng = '') {
         setActiveButton(addSpotBtn);
         recordedVideoUrl = null;
-        const lat = currentUserPosition ? currentUserPosition[0].toFixed(6) : '';
-        const lng = currentUserPosition ? currentUserPosition[1].toFixed(6) : '';
         content.innerHTML = `
             <h3>Add New Spot</h3>
-            <p>Your location is pre-filled.</p>
+            <p>Tap Save to add the spot at the selected location.</p>
             <form id="addSpotForm">
                 <label>Name:<br/><input type="text" id="spotName" required /></label>
                 <label>Latitude:<br/><input type="number" step="any" id="spotLat" value="${lat}" required /></label>
@@ -308,9 +317,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <button type="button" id="recordVideoBtn">Record Trick 🎥</button>
                 <div id="videoStatus"></div>
                 <button type="submit">Add Spot</button>
+                <button type="button" id="cancelAddSpotBtn">Cancel</button>
             </form>
         `;
         document.getElementById('recordVideoBtn').onclick = () => openCamera();
+        document.getElementById('cancelAddSpotBtn').onclick = () => { 
+            mapClickToAdd = false; 
+            if (tempAddMarker) { map.removeLayer(tempAddMarker); tempAddMarker = null; }
+            content.innerHTML = ''; 
+            setActiveButton(discoverBtn); 
+        };
         document.getElementById('addSpotForm').onsubmit = async (e) => {
             e.preventDefault();
             if (!currentUserId) return showModal("You must be signed in.");
@@ -326,9 +342,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await addDoc(collection(db, `/artifacts/${appId}/public/data/skate_spots`), newSpot);
                 await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), { spotsAdded: increment(1), xp: increment(100) });
                 showModal('Spot added! You earned 100 XP!');
+                mapClickToAdd = false;
+                if (tempAddMarker) { map.removeLayer(tempAddMarker); tempAddMarker = null; }
                 if (discoverBtn) discoverBtn.click();
             } catch (error) { console.error("Error adding spot: ", error); showModal("Failed to add spot."); }
         };
+    }
+
+    if (addSpotBtn) {
+        addSpotBtn.onclick = () => {
+            // Toggle map-click-to-add mode. When enabled, user clicks map to place a spot.
+            if (mapClickToAdd) {
+                mapClickToAdd = false;
+                if (tempAddMarker) { map.removeLayer(tempAddMarker); tempAddMarker = null; }
+                setActiveButton(null);
+                content.innerHTML = '<p>Map click-to-add canceled.</p>';
+                return;
+            }
+            mapClickToAdd = true;
+            setActiveButton(addSpotBtn);
+            content.innerHTML = '<p>Click anywhere on the map to add a new spot. Click the "Add Spot" button again to cancel.</p>';
         };
     }
 
