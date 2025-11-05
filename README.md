@@ -31,7 +31,7 @@ Quick options
 2) Connect a Git repository (recommended for updates)
 - Create a GitHub repository and push this project.
   ```bash
-  cd "C:\Users\treev\OneDrive\Apps\Desktop\skateguest-deploy\skatequest-deploy 1"
+  cd /path/to/SkateQuest-App
   git init
   git add .
   git commit -m "Initial SkateQuest site"
@@ -56,9 +56,9 @@ Notes & tips
 - If you see issues with icons or the manifest, make sure the `icons/` directory is present and was uploaded.
 
 Local testing
-- Quick local server (PowerShell):
-  ```powershell
-  cd "C:\Users\treev\OneDrive\Apps\Desktop\skateguest-deploy\skatequest-deploy 1"
+- Quick local server:
+  ```bash
+  cd /path/to/SkateQuest-App
   python -m http.server 8000
   # open http://localhost:8000
   ```
@@ -73,10 +73,10 @@ If you want I can:
 
 Quick local test for the new gameplay UI (pending challenges & completion):
 
-1) Serve the project locally (PowerShell):
+1) Serve the project locally:
 
-```powershell
-cd "C:\Users\treev\OneDrive\Apps\Desktop\skateguest-deploy\skatequest-deploy 1"
+```bash
+cd /path/to/SkateQuest-App
 python -m http.server 8000
 # then open http://localhost:8000 in a browser
 ```
