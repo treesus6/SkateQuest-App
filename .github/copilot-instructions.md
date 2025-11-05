@@ -132,23 +132,31 @@ firebase deploy --only firestore:rules,storage:rules --project skatequest-666
 - Handle errors gracefully with try/catch blocks
 - Use `console.debug` for debug logs, `console.error` for errors
 - Never commit Firebase API keys or secrets (they're already exposed client-side safely)
+- Follow functional programming principles where possible
+- Keep functions small and focused (single responsibility)
+- Document complex logic with inline comments
 
 ### HTML/CSS
 - Semantic HTML5 elements
 - Mobile-first responsive design
 - Use CSS custom properties for theming
 - Maintain accessibility (ARIA labels, alt text, keyboard navigation)
+- Validate HTML structure
+- Keep CSS selectors specific but not overly complex
 
 ### Firebase
 - Always use security rules to protect data
 - Use Firebase Authentication for user-specific operations
 - Leverage Firestore transactions for atomic operations
 - Use Cloud Functions for sensitive operations (e.g., awarding XP)
+- Test security rules locally with Firebase emulators
+- Never expose sensitive operations to client-side code
 
 ### API Integration
 - Use the `apiFetch` helper in `main.js` for API calls
 - Automatically attaches Firebase auth token to requests
 - Gracefully handle network errors
+- Implement proper error handling and user feedback
 
 ## Common Tasks
 
@@ -196,11 +204,37 @@ firebase deploy --only firestore:rules,storage:rules --project skatequest-666
 
 ## Security Considerations
 
+### General Security Practices
 - Firebase security rules enforce read/write permissions
 - User authentication required for challenge completion
 - Cloud Functions validate user identity before awarding XP
 - Client-side code only - API keys are safe to expose (protected by Firebase rules)
 - Always validate user input and sanitize data before Firestore writes
+
+### Prohibited Actions
+- **Never** commit secrets, API keys, or credentials to the repository
+- **Never** expose sensitive user data in logs or error messages
+- **Never** bypass authentication checks in Cloud Functions
+- **Never** allow direct database writes without proper validation
+- **Never** trust client-side data without server-side verification
+
+### Security Rules Testing
+Before deploying security rule changes:
+1. Test locally with Firebase emulators:
+   ```bash
+   firebase emulators:start
+   ```
+2. Review rules for unintended access paths
+3. Verify authentication requirements are enforced
+4. Test both authorized and unauthorized access scenarios
+5. Check that user data is properly isolated
+
+### Reporting Security Issues
+If you discover a security vulnerability:
+1. Do NOT open a public issue
+2. Contact the repository maintainers privately
+3. Provide detailed information about the vulnerability
+4. Allow time for a fix before public disclosure
 
 ## Troubleshooting
 
@@ -226,6 +260,53 @@ Additional documentation files:
 - **PRODUCTION.md**: Production environment setup
 - **START.md**: Quick start guide
 - **QUICK_REFERENCE.md**: Quick reference for common tasks
+
+## Contribution Workflow
+
+### Before Making Changes
+1. Understand the issue or feature request thoroughly
+2. Review existing code in the relevant files
+3. Check if similar functionality exists elsewhere in the codebase
+4. Consider impact on existing features and user experience
+
+### Making Changes
+1. Make minimal, surgical changes to accomplish the goal
+2. Follow existing code patterns and conventions
+3. Preserve existing working code unless it needs to be fixed
+4. Test changes locally before committing:
+   ```bash
+   npm run serve-local
+   # Then test in browser at http://localhost:8000
+   ```
+
+### Testing Your Changes
+1. **Manual Testing**: Always test in browser with DevTools open
+2. **Check Console**: Look for JavaScript errors or warnings
+3. **Test PWA Features**: Verify service worker and offline functionality
+4. **Cross-browser**: Test in Chrome/Firefox/Safari if making UI changes
+5. **Mobile Testing**: Test responsive design on mobile viewport
+
+### Code Quality Checks
+1. **Lint JavaScript**:
+   ```bash
+   npx eslint app.js main.js
+   ```
+2. **Validate HTML**: Check for proper structure and accessibility
+3. **Check Firebase Config**: Ensure Firebase project ID is correct in `index.html`
+4. **Review Security Rules**: If modifying `firestore.rules` or `storage.rules`, test with emulators:
+   ```bash
+   firebase emulators:start
+   ```
+
+### Committing Changes
+1. Write clear, descriptive commit messages
+2. Reference issue numbers in commits (e.g., "Fix #123: description")
+3. Keep commits focused on a single concern
+4. Avoid committing:
+   - Build artifacts or generated files
+   - Temporary test files
+   - node_modules directory
+   - .env files or secrets
 
 ## Contact and Support
 
