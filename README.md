@@ -1,3 +1,32 @@
+# SkateQuest 🛼
+
+A Progressive Web App (PWA) that helps skateboarders discover, share, and track local skating spots. Join challenges, earn badges and XP, and connect with the skating community!
+
+## 🌟 Features
+
+- **Interactive Map**: Discover skate spots worldwide with Leaflet.js mapping
+- **Click to Add Spots**: Simply click anywhere on the map to add a new skate spot at that location
+- **Challenges System**: Complete skate challenges to earn XP and unlock achievements
+- **Video Recording**: Record trick videos directly in the app
+- **Community Driven**: Users can add and share their favorite spots
+- **PWA Ready**: Install as an app on mobile devices
+- **Offline Support**: Service worker caches assets for offline use
+
+## 🚀 Live Sites
+
+- **Primary**: https://www.sk8quest.com
+- **Netlify**: https://skatequest.netlify.app
+
+## 📱 How to Use
+
+1. **Discover Spots**: Browse the map to find skate spots near you
+2. **Add Your Own**: Click "Add Spot" then click anywhere on the map to place a new spot
+3. **Join Challenges**: Complete skate challenges to earn XP
+4. **Record Tricks**: Use the camera to record and share your best tricks
+5. **Track Progress**: View your profile to see XP, badges, and spots added
+
+---
+
 SkateQuest — Deploying to Netlify
 
 This folder contains a static site (HTML, CSS, JS) for SkateQuest.
