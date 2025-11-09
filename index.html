@@ -3,27 +3,27 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        <meta name="theme-color" content="#d2673d" />
+        <meta name="theme-color" content="#FF5722" />
         
-        <title>SkateQuest - Discover and Share Skateboarding Spots</title>
+        <title>SkateQuest 🛹 - Real Tricks Only</title>
         
         <!-- SEO Meta Tags -->
-        <meta name="description" content="SkateQuest helps skateboarders discover, share, and track local skating spots. Join challenges, earn badges, and connect with the skating community." />
-        <meta name="keywords" content="skateboarding, skate spots, skating locations, skateboard community, skate challenges" />
+        <meta name="description" content="SkateQuest - Where real skateboarding tricks count. Challenge skaters, prove your skills with video, find skateparks, and help kids get boards." />
+        <meta name="keywords" content="skateboarding, skate challenges, real tricks, skate spots, skateboard community, QR treasure hunt, skateboard donations" />
         <meta name="author" content="SkateQuest" />
         
-        <!-- Open Graph Tags for Social Media -->
-        <meta property="og:title" content="SkateQuest - Discover and Share Skateboarding Spots" />
-        <meta property="og:description" content="Find and share the best skateboarding spots in your area. Join challenges and connect with other skaters." />
-        <meta property="og:image" content="https://www.sk8quest.com/icons/skatequest-icon-512.png" />
-        <meta property="og:url" content="https://www.sk8quest.com" />
+        <!-- Open Graph Tags -->
+        <meta property="og:title" content="SkateQuest - Real Tricks Only" />
+        <meta property="og:description" content="Challenge skaters to real tricks. Film your proof. Give back to the community." />
+        <meta property="og:image" content="https://www.sk8.quest/icons/skatequest-icon-512.png" />
+        <meta property="og:url" content="https://www.sk8.quest" />
         <meta property="og:type" content="website" />
         
         <!-- Twitter Card Tags -->
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="SkateQuest - Skateboarding Spots Finder" />
-        <meta name="twitter:description" content="Discover and share skateboarding spots. Join challenges and track your progress." />
-        <meta name="twitter:image" content="https://www.sk8quest.com/icons/skatequest-icon-512.png" />
+        <meta name="twitter:title" content="SkateQuest - Real Skateboarding Challenges" />
+        <meta name="twitter:description" content="No controllers. No fake tricks. Just real skateboarding." />
+        <meta name="twitter:image" content="https://www.sk8.quest/icons/skatequest-icon-512.png" />
         
         <!-- PWA Tags -->
         <link rel="manifest" href="manifest.json" />
@@ -31,146 +31,297 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="SkateQuest">
         
-        <!-- App Icons -->
+        <!-- Icons -->
         <link rel="icon" href="icons/skatequest-icon-192.png" />
         <link rel="apple-touch-icon" href="icons/skatequest-icon-192.png">
         
         <!-- Stylesheets -->
-        <link rel="stylesheet" href="style.css" />
+        <link rel="stylesheet" href="style.css?v=2.0" />
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     </head>
     <body>
+        <!-- Header -->
         <header>
-            <h1>SkateQuest 🛹</h1>
+            <h1>SK8.QUEST 🛹</h1>
+            <div class="badge-real-tricks">Real Tricks Only</div>
         </header>
 
         <div class="app-container">
+            <!-- Sidebar Navigation -->
             <aside class="sidebar">
                 <nav class="side-nav">
-                    <button id="discoverBtn">Discover</button>
-                    <button id="addSpotBtn">Add Spot</button>
-                    <button id="challengesBtn">Challenges</button>
-                    <button id="profileBtn">Profile</button>
-                    <button id="legalBtn">Legal</button>
+                    <button id="discoverBtn" class="active">🗺️ Discover</button>
+                    <button id="challengesBtn">⚡ Challenges</button>
+                    <button id="qrHuntBtn">🔍 QR Hunt</button>
+                    <button id="givingBackBtn">❤️ Give Back</button>
+                    <button id="addSpotBtn">➕ Add Spot</button>
+                    <button id="profileBtn">👤 Profile</button>
+                    <button id="legalBtn">📜 Legal</button>
                 </nav>
             </aside>
 
+            <!-- Main Content Area -->
             <main class="main-area">
-                <div id="map" style="height:60vh; width:100%;"></div>
+                <!-- Map -->
+                <div id="map"></div>
+
+                <!-- Content Sections -->
                 <section id="content">
-                    <!-- Spot filter -->
-                    <label for="spotFilter">Filter spots:</label>
-                    <select id="spotFilter">
-                        <option value="all">All Spots</option>
-                        <option value="ledge">Ledge</option>
-                        <option value="rail">Rail</option>
-                        <option value="gap">Gap</option>
-                    </select>
-
-                    <!-- Proof Upload Panel -->
-                    <section id="proof-upload" style="margin-top:1rem; padding:0.5rem; border-radius:8px; background:#fff;">
-                        <h2>Upload Challenge Proof</h2>
-                        <input type="file" id="proofFile" accept="image/*,video/*" />
-                        <button onclick="uploadProof()" class="action-button">Upload Proof</button>
-                    </section>
-
-                    <!-- Challenge Feed -->
-                    <section id="challenge-feed" style="margin-top:1rem; padding:0.5rem; border-radius:8px; background:#fff;">
-                        <h2>Recent Challenges</h2>
-                        <!-- Challenge cards will be dynamically added here -->
-                    </section>
-
-                    <!-- Challenge Panel -->
-                    <section id="challenge-panel" style="margin-top:1rem; padding:0.5rem; border-radius:8px; background:#fff;">
-                        <h2>Call-Out Trick Challenge</h2>
-                        <label for="spot-select">Select Spot:</label>
-                        <select id="spot-select">
-                            <option disabled data-placeholder selected>Choose a spot</option>
-                        </select>
-
-                        <label for="trick-select">Select Trick:</label>
-                        <select id="trick-select">
-                            <option disabled data-placeholder selected>Choose a trick</option>
-                        </select>
-
-                        <label for="challenge-title">Title (optional)</label>
-                        <input id="challenge-title" placeholder="Kickflip over bench" />
-
-                        <label for="challenge-desc">Description (optional)</label>
-                        <input id="challenge-desc" placeholder="Land a clean kickflip over the downtown bench" />
-
-                        <label for="challenge-xp">XP Reward</label>
-                        <input id="challenge-xp" type="number" min="0" value="50" />
-
-                        <label for="challenger-input">Challenger (user id)</label>
-                        <input id="challenger-input" placeholder="user id (defaults to signed-in)" />
-
-                        <div style="margin-top:0.5rem;">
-                          <button id="issue-challenge" style="background:#d2673d;color:#fff;padding:.5rem 1rem;border-radius:6px;border:none;">Issue Challenge</button>
+                    
+                    <!-- DAILY CHALLENGE BANNER -->
+                    <div id="daily-challenge-banner" class="panel" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                            <div>
+                                <div style="font-size:0.8rem; text-transform:uppercase; color:var(--primary-orange); font-weight:bold;">🔥 Daily Challenge</div>
+                                <h3 id="daily-challenge-trick" style="margin:0.5rem 0; font-size:1.8rem;"></h3>
+                                <div id="daily-challenge-meta" style="display:flex; gap:1rem; font-size:0.9rem; color:var(--text-secondary);"></div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div id="daily-challenge-time" style="font-size:0.9rem; color:var(--text-secondary);"></div>
+                                <div id="daily-challenge-points" style="font-size:2rem; font-weight:900; color:var(--primary-orange);"></div>
+                            </div>
                         </div>
-                                                <div id="challenge-confirm" style="margin-top:.5rem;font-size:.9rem;color:#222"></div>
-                                                <div style="margin-top:.5rem;">
-                                                    <button id="complete-challenge-btn" style="background:#2a8f2a;color:#fff;padding:.4rem .8rem;border-radius:6px;border:none;">Mark Complete</button>
-                                                </div>
-                                                <div id="challenge-timer" class="panel" style="display:none;margin-top:.5rem;color:#fff;"></div>
+                        <button id="accept-daily-challenge" class="btn-primary" style="margin-top:1rem; width:100%;">Accept Challenge</button>
+                    </div>
+
+                    <!-- GIVING BACK BANNER -->
+                    <div id="giving-back-banner" class="giving-back-banner" style="display:none;">
+                        <h3 style="margin:0 0 1rem 0;">Skateboarding Saves Lives ❤️</h3>
+                        <p style="margin-bottom:1rem;">Every QR code you buy helps fund skateboards for kids who can't afford them.</p>
+                        <div class="impact-stats">
+                            <div class="stat-card">
+                                <div class="stat-number" id="total-raised">$0</div>
+                                <div class="stat-label">Raised</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="boards-donated">0</div>
+                                <div class="stat-label">Boards Donated</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="active-qrs">0</div>
+                                <div class="stat-label">Active QRs</div>
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="margin-top:1rem; width:100%;" onclick="showQRPurchase()">Buy QR Codes</button>
+                    </div>
+
+                    <!-- LEADERBOARD -->
+                    <section id="leaderboard" class="panel">
+                        <h2>🏆 Top Skaters</h2>
+                        <div id="leaderboard-list">
+                            <div>Loading leaderboard...</div>
+                        </div>
                     </section>
 
-                                        <!-- Leaderboard -->
-                                        <section id="leaderboard" class="panel">
-                                            <h2>Top Skaters</h2>
-                                            <div id="leaderboard-list"></div>
-                                        </section>
+                    <!-- PENDING CHALLENGES -->
+                    <section id="pending-challenges" class="panel">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h2 style="margin:0;">⚡ Call-Out Challenges</h2>
+                            <button class="btn-primary" id="create-challenge-btn">+ Issue Challenge</button>
+                        </div>
+                        <div id="pending-challenges-list">
+                            <div style="text-align:center; padding:2rem; color:var(--text-secondary);">
+                                Loading challenges...
+                            </div>
+                        </div>
+                    </section>
 
-                                        <!-- Pending challenges (real-time list) -->
-                                        <section id="pending-challenges" class="panel" style="margin-top:1rem;">
-                                            <h3>Pending Challenges</h3>
-                                            <div id="pending-challenges-list">Loading…</div>
-                                        </section>
+                    <!-- CHALLENGE PANEL (for creating challenges) -->
+                    <section id="challenge-panel" class="panel" style="display:none;">
+                        <h2>Call-Out Trick Challenge</h2>
+                        <form id="create-challenge-form">
+                            <label>Select Spot:</label>
+                            <select id="spot-select" required>
+                                <option value="" disabled selected>Choose a spot</option>
+                            </select>
 
-                                        <!-- Streak display -->
-                                        <div id="streak-display" class="panel" style="margin-top:1rem;"></div>
+                            <label>Select Trick:</label>
+                            <select id="trick-select" required>
+                                <option value="" disabled selected>Choose a trick</option>
+                                <option value="Kickflip">Kickflip</option>
+                                <option value="Heelflip">Heelflip</option>
+                                <option value="Tre Flip">Tre Flip</option>
+                                <option value="Backside 180">Backside 180</option>
+                                <option value="Frontside 180">Frontside 180</option>
+                                <option value="50-50 Grind">50-50 Grind</option>
+                                <option value="Boardslide">Boardslide</option>
+                                <option value="Nosegrind">Nosegrind</option>
+                                <option value="Manual">Manual</option>
+                                <option value="Ollie">Ollie</option>
+                            </select>
 
-                                        <!-- Rating UI (example, hook up spotId dynamically in app) -->
-                                        <div id="rating-ui" style="margin-top:1rem;" class="panel">
-                                            <label for="rating-select">Rate this spot:</label>
-                                            <select id="rating-select">
-                                                <option value="1">★☆☆☆☆</option>
-                                                <option value="2">★★☆☆☆</option>
-                                                <option value="3">★★★☆☆</option>
-                                                <option value="4">★★★★☆</option>
-                                                <option value="5">★★★★★</option>
-                                            </select>
-                                            <button id="rating-submit" style="margin-left:.5rem;">Submit</button>
-                                        </div>
+                            <label>Challenge Title (optional):</label>
+                            <input type="text" id="challenge-title" placeholder="Kickflip over bench" />
 
-                                                            <!-- Badges -->
-                                                            <div id="badge-display" class="panel" style="margin-top:1rem;"></div>
+                            <label>Description (optional):</label>
+                            <textarea id="challenge-desc" placeholder="Land a clean kickflip over the downtown bench" rows="3"></textarea>
 
-                                                            <!-- Heatmap toggle -->
-                                                            <div style="margin-top:1rem;">
-                                                                <label><input type="checkbox" id="heatmap-toggle" /> Show heatmap</label>
-                                                            </div>
+                            <label>XP Reward:</label>
+                            <input type="number" id="challenge-xp" min="50" max="5000" value="500" required />
+
+                            <label>Challenge Specific User (optional):</label>
+                            <input type="text" id="challenger-input" placeholder="Leave blank for open challenge" />
+
+                            <div style="display:flex; gap:1rem; margin-top:1rem;">
+                                <button type="submit" class="btn-primary" style="flex:1;">Issue Challenge</button>
+                                <button type="button" class="btn-secondary" id="cancel-challenge-btn" style="flex:1;">Cancel</button>
+                            </div>
+                        </form>
+                        <div id="challenge-confirm" style="margin-top:1rem;"></div>
+                    </section>
+
+                    <!-- QR HUNT SECTION -->
+                    <section id="qr-hunt-section" class="panel qr-hunt-panel" style="display:none;">
+                        <h2>🔍 QR Treasure Hunt</h2>
+                        <p style="margin-bottom:1rem;">Hide QR codes at your favorite spots. When found, they unlock rewards and fund boards for kids! 🛹❤️</p>
+                        
+                        <div class="qr-stats">
+                            <div class="qr-stat-box">
+                                <div class="stat-number" id="user-qrs-hidden">0</div>
+                                <div class="stat-label">You've Hidden</div>
+                            </div>
+                            <div class="qr-stat-box">
+                                <div class="stat-number" id="user-qrs-found">0</div>
+                                <div class="stat-label">You've Found</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:1rem; margin-top:1.5rem;">
+                            <button class="btn-primary" onclick="showQRPurchase()">💳 Buy QR Pack - $8</button>
+                            <button class="btn-secondary" id="scan-qr-btn">📱 Scan QR Code</button>
+                        </div>
+
+                        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1); text-align:center; font-size:0.85rem; color:var(--text-muted);">
+                            100% of proceeds support skateboarding programs for kids
+                        </div>
+                    </section>
+
+                    <!-- HOT SPOTS (Featured Skateparks) -->
+                    <section id="hot-spots" class="panel" style="display:none;">
+                        <h2>🌟 Hot Spots Near You</h2>
+                        <div id="hot-spots-list"></div>
+                    </section>
+
+                    <!-- SPOT FILTERS -->
+                    <div id="spot-filters" style="display:none;">
+                        <label for="spotFilter">Filter spots:</label>
+                        <select id="spotFilter">
+                            <option value="all">All Spots</option>
+                            <option value="ledge">Ledge</option>
+                            <option value="rail">Rail</option>
+                            <option value="gap">Gap</option>
+                            <option value="stairs">Stairs</option>
+                            <option value="bowl">Bowl</option>
+                        </select>
+                    </div>
+
+                    <!-- PROOF UPLOAD -->
+                    <section id="proof-upload" style="display:none;" class="panel">
+                        <h2>Upload Challenge Proof 🎥</h2>
+                        <input type="file" id="proofFile" accept="image/*,video/*" />
+                        <button class="btn-primary" style="margin-top:1rem;" onclick="uploadProof()">Upload Proof</button>
+                    </section>
+
+                    <!-- CHALLENGE FEED -->
+                    <section id="challenge-feed" class="panel" style="display:none;">
+                        <h2>Recent Challenge Completions</h2>
+                        <div id="challenge-feed-list"></div>
+                    </section>
+
+                    <!-- STREAK DISPLAY -->
+                    <div id="streak-display" class="panel" style="display:none;"></div>
+
+                    <!-- BADGES -->
+                    <div id="badge-display" class="panel" style="display:none;">
+                        <h3>Your Badges</h3>
+                        <div class="badges" id="user-badges"></div>
+                    </div>
+
+                    <!-- RATING UI -->
+                    <div id="rating-ui" class="panel" style="display:none;">
+                        <label for="rating-select">Rate this spot:</label>
+                        <select id="rating-select">
+                            <option value="1">★☆☆☆☆</option>
+                            <option value="2">★★☆☆☆</option>
+                            <option value="3">★★★☆☆</option>
+                            <option value="4">★★★★☆</option>
+                            <option value="5">★★★★★</option>
+                        </select>
+                        <button id="rating-submit" class="btn-primary">Submit Rating</button>
+                    </div>
+
+                    <!-- HEATMAP TOGGLE -->
+                    <div style="margin-top:1rem;">
+                        <label class="heatmap-toggle">
+                            <input type="checkbox" id="heatmap-toggle" /> 
+                            Show activity heatmap
+                        </label>
+                    </div>
                 </section>
             </main>
         </div>
 
-        <!-- Modals -->
-            <div id="customModal" class="modal" hidden>
-                <div class="modal-content">
-                    <button class="close-button">×</button>
-                    <h3 id="modalTitle">Confirm action</h3>
-                    <p id="modalText"></p>
-                    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem;">
-                        <button id="modalCancel" style="background:#aaa;color:#fff;padding:.4rem .8rem;border-radius:6px;border:none;">Cancel</button>
-                        <button id="modalConfirm" style="background:#2a8f2a;color:#fff;padding:.4rem .8rem;border-radius:6px;border:none;">Confirm</button>
+        <!-- ====== MODALS ====== -->
+
+        <!-- Custom Modal -->
+        <div id="customModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <button class="close-button">×</button>
+                <h3 id="modalTitle">Confirm action</h3>
+                <p id="modalText"></p>
+                <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1.5rem;">
+                    <button id="modalCancel" class="btn-secondary">Cancel</button>
+                    <button id="modalConfirm" class="btn-primary">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Camera Modal -->
+        <div id="cameraModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <button class="close-button" id="closeCameraBtn">×</button>
+                <h3>Record Your Trick 🎥</h3>
+                <div class="camera-container">
+                    <video id="cameraPreview" autoplay playsinline></video>
+                    <div class="camera-controls">
+                        <button id="recordBtn" class="btn-primary">⏺️ Record</button>
+                        <button id="stopRecordBtn" class="btn-primary" style="display:none;">⏹️ Stop</button>
+                        <button id="saveVideoBtn" class="btn-success" style="display:none;">💾 Save</button>
+                        <button id="cancelCameraBtn" class="btn-secondary">Cancel</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-    <!-- Leaflet JS (no SRI) -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Leaflet heatmap plugin -->
-    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+        <!-- Legal Modal -->
+        <div id="legalModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <button class="close-button">×</button>
+                <h3>Legal Information</h3>
+                <div id="legalText" class="legal-content" style="max-height:60vh; overflow-y:auto; padding:1rem;"></div>
+            </div>
+        </div>
+
+        <!-- QR Purchase Modal -->
+        <div id="qrPurchaseModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <button class="close-button">×</button>
+                <h3>Buy QR Code Pack</h3>
+                <p>Choose a pack to purchase. QR codes can be printed and hidden at skate spots!</p>
+                <div style="display:flex; flex-direction:column; gap:1rem; margin-top:1.5rem;">
+                    <button class="btn-primary" onclick="purchaseQRPack(1, 2)">1 QR Code - $2</button>
+                    <button class="btn-primary" onclick="purchaseQRPack(5, 8)">5 QR Codes - $8</button>
+                    <button class="btn-primary" onclick="purchaseQRPack(10, 15)">10 QR Codes - $15</button>
+                </div>
+                <p style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted); text-align:center;">
+                    100% of proceeds fund skateboard donations for kids
+                </p>
+            </div>
+        </div>
+
+        <!-- Leaflet JS -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
         <!-- Firebase SDK -->
         <script type="module">
@@ -181,8 +332,6 @@
             import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
             import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
-            // Firebase config - these values are public and safe to expose in client code
-            // Server-side deploys use FIREBASE_TOKEN and FIREBASE_PROJECT_ID from GitHub Actions secrets/variables
             const firebaseConfig = {
                 apiKey: "AIzaSyBd55v6rN7ngtaoXIwuQb0lHy0p8_69dzU",
                 authDomain: "skatequest-666.firebaseapp.com",
@@ -198,15 +347,23 @@
             const db = getFirestore(app);
             const auth = getAuth(app);
             const storage = getStorage(app);
-
             const functions = getFunctions(app);
-            window.firebaseInstances = { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction, query, where, orderBy, limit, getDocs, collectionGroup, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, functions, httpsCallable };
-            console.log('✓ Firebase initialized successfully');
+            
+            window.firebaseInstances = { 
+                db, auth, storage, functions,
+                doc, getDoc, setDoc, addDoc, onSnapshot, collection, 
+                serverTimestamp, updateDoc, increment, runTransaction, 
+                query, where, orderBy, limit, getDocs, collectionGroup,
+                ref, uploadBytes, getDownloadURL, 
+                signInAnonymously, onAuthStateChanged, 
+                httpsCallable,
+                appId: firebaseConfig.appId 
+            };
+            console.log('✓ Firebase initialized');
         </script>
 
-        <!-- App JS with cache-busting -->
-    <script src="app.js?v=8" defer></script>
-    <script src="pwa.js?v=8" defer></script>
+        <!-- App Scripts -->
+        <script src="app.js?v=2.0" defer></script>
+        <script src="pwa.js?v=2.0" defer></script>
     </body>
 </html>
-
