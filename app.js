@@ -1,6 +1,8 @@
-// Copyright (c) 2024 Your Name / SkateQuest. All Rights Reserved.
+// SkateQuest App - Upgraded Version 2.0
+// Copyright (c) 2024 SkateQuest. All Rights Reserved.
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Wait for Firebase to initialize
     await new Promise(resolve => {
         const interval = setInterval(() => {
             if (window.firebaseInstances) {
@@ -10,217 +12,290 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 100);
     });
 
-    const { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, appId } = window.firebaseInstances;
+    const { 
+        db, auth, storage, functions,
+        doc, getDoc, setDoc, addDoc, onSnapshot, collection, 
+        serverTimestamp, updateDoc, increment, runTransaction,
+        query, where, orderBy, limit, getDocs, collectionGroup,
+        ref, uploadBytes, getDownloadURL, 
+        signInAnonymously, onAuthStateChanged,
+        httpsCallable,
+        appId 
+    } = window.firebaseInstances;
 
+    // ====== MAP INITIALIZATION ======
     const map = L.map('map').setView([45.6387, -122.6615], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
-    // When user clicks on the map while in add mode, show the add form at that coord
-    map.on('click', (e) => {
-        if (!mapClickToAdd) return;
-        const { lat, lng } = e.latlng;
-        // add or move temporary marker
-        if (!tempAddMarker) tempAddMarker = L.marker([lat, lng]).addTo(map);
-        else tempAddMarker.setLatLng([lat, lng]);
-        showAddSpotForm(lat.toFixed(6), lng.toFixed(6));
-    });
-
-    let skateSpots = [], userProfile = {}, markers = [];
-    let currentUserId = null, userLocationMarker = null, currentUserPosition = null;
+    // ====== STATE VARIABLES ======
+    let skateSpots = [];
+    let userProfile = {};
+    let markers = [];
+    let currentUserId = null;
+    let userLocationMarker = null;
+    let currentUserPosition = null;
     let mediaRecorder, recordedChunks = [], recordedVideoUrl = null, videoStream = null;
-    let mapClickToAdd = false, tempAddMarker = null;
+    let mapClickToAdd = false;
+    let tempAddMarker = null;
+    let dailyChallengeData = null;
+    let givingBackStats = { raised: 0, boardsDonated: 0, activeQRs: 0 };
+    let userQRStats = { hidden: 0, found: 0 };
 
+    // ====== DOM ELEMENTS ======
     const content = document.getElementById('content');
     const discoverBtn = document.getElementById('discoverBtn');
     const addSpotBtn = document.getElementById('addSpotBtn');
+    const challengesBtn = document.getElementById('challengesBtn');
+    const qrHuntBtn = document.getElementById('qrHuntBtn');
+    const givingBackBtn = document.getElementById('givingBackBtn');
     const profileBtn = document.getElementById('profileBtn');
-    const centerMapBtn = document.getElementById('centerMapBtn');
     const legalBtn = document.getElementById('legalBtn');
-    const modal = document.getElementById('customModal');
+    
+    // Modals
+    const customModal = document.getElementById('customModal');
     const modalText = document.getElementById('modalText');
-    const closeButton = document.querySelector('.close-button');
     const cameraModal = document.getElementById('cameraModal');
     const cameraPreview = document.getElementById('cameraPreview');
+    const legalModal = document.getElementById('legalModal');
+    const legalText = document.getElementById('legalText');
+    
+    // Camera controls
     const recordBtn = document.getElementById('recordBtn');
     const stopRecordBtn = document.getElementById('stopRecordBtn');
     const saveVideoBtn = document.getElementById('saveVideoBtn');
     const cancelCameraBtn = document.getElementById('cancelCameraBtn');
-    const legalModal = document.getElementById('legalModal');
-    const legalText = document.getElementById('legalText');
+    const closeCameraBtn = document.getElementById('closeCameraBtn');
 
-    document.querySelectorAll('.close-button').forEach(btn => btn.onclick = () => {
-        btn.closest('.modal').style.display = 'none';
+    // ====== MODAL HANDLERS ======
+    document.querySelectorAll('.close-button').forEach(btn => {
+        btn.onclick = () => btn.closest('.modal').style.display = 'none';
     });
-    window.onclick = (event) => { if (event.target.classList.contains('modal')) event.target.style.display = "none"; };
-    function showModal(message) { 
-        if (modalText && modal) {
+    
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    };
+
+    function showModal(message) {
+        if (modalText && customModal) {
             modalText.textContent = message;
-            modal.style.display = "block";
+            customModal.style.display = "block";
         } else {
             console.warn('Modal elements not found:', message);
         }
     }
+
+    function showToast(message) {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) existingToast.remove();
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ====== NAVIGATION ======
     function setActiveButton(activeBtn) {
         if (!activeBtn) return;
-        [discoverBtn, addSpotBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
+        [discoverBtn, addSpotBtn, challengesBtn, qrHuntBtn, givingBackBtn, profileBtn, legalBtn]
+            .filter(btn => btn)
+            .forEach(btn => btn.classList.remove('active'));
         activeBtn.classList.add('active');
     }
 
-    console.log('Button check:', {discoverBtn, addSpotBtn, profileBtn, legalBtn});
+    // ====== MAP CLICK HANDLER ======
+    map.on('click', (e) => {
+        if (!mapClickToAdd) return;
+        const { lat, lng } = e.latlng;
+        if (!tempAddMarker) {
+            tempAddMarker = L.marker([lat, lng]).addTo(map);
+        } else {
+            tempAddMarker.setLatLng([lat, lng]);
+        }
+        showAddSpotForm(lat.toFixed(6), lng.toFixed(6));
+    });
 
+    // ====== AUTHENTICATION ======
     onAuthStateChanged(auth, user => {
         if (user) {
             currentUserId = user.uid;
+            console.log('✓ User authenticated:', currentUserId);
             setupRealtimeListeners();
             startGpsTracking();
+            loadDailyChallenge();
+            loadGivingBackStats();
+            loadUserQRStats();
             document.querySelectorAll('nav button').forEach(b => b.disabled = false);
             if (discoverBtn) discoverBtn.click();
         } else {
             currentUserId = null;
             document.querySelectorAll('nav button').forEach(b => b.disabled = true);
+            signIn();
         }
     });
 
     async function signIn() {
         try {
             await signInAnonymously(auth);
-        } catch (error) { console.error("Error signing in:", error); showModal("Could not connect. Please refresh."); }
+            console.log('✓ Signed in anonymously');
+        } catch (error) {
+            console.error("Error signing in:", error);
+            showModal("Could not connect. Please refresh.");
+        }
     }
 
-    if (legalBtn && legalText && legalModal) {
-        legalBtn.onclick = () => {
-            setActiveButton(legalBtn);
-            legalText.innerHTML = `
-            <p><em>Last Updated: August 16, 2025</em></p>
-            <p><strong>Legal Disclaimer:</strong> These documents are provided as a starting point. It is strongly recommended that you consult with a qualified legal professional to ensure these policies are complete and appropriate for your specific situation before launching your application.</p>
-            
-            <hr>
-
-            <h3>Terms of Service</h3>
-            <p>Welcome to SkateQuest (the "App"). By accessing or using our App, you agree to be bound by these Terms of Service and our Privacy Policy.</p>
-            
-            <h4>1. Acknowledgment and Assumption of Risk</h4>
-            <p>Skateboarding is an activity with inherent and significant risks of property damage, serious bodily injury, or death. By using this App, you expressly acknowledge, understand, and agree that you are participating in this activity at your own sole risk. You are responsible for your own safety and the safety of others around you. The creators of SkateQuest are not liable for any accidents, injuries, or damages that may occur in connection with your use of the App.</p>
-
-            <h4>2. User Responsibilities and Conduct</h4>
-            <ul>
-                <li><strong>Safety First:</strong> Always wear appropriate protective gear, including a helmet.</li>
-                <li><strong>Respect Property:</strong> Do not trespass on private property. Only add and visit spots that are legally accessible to the public. You are solely responsible for any legal consequences of trespassing.</li>
-                <li><strong>Obey Laws:</strong> You must obey all local, state, and federal laws, including traffic laws and regulations regarding skateboarding in public areas.</li>
-                <li><strong>Content:</strong> Do not create spots or upload videos that are dangerous, illegal, obscene, or encourage reckless behavior. We reserve the right to remove any content we deem inappropriate.</li>
-            </ul>
-
-            <h4>3. User-Generated Content</h4>
-            <p>You grant SkateQuest a worldwide, non-exclusive, royalty-free license to use, display, and share the content (spots, videos) you upload within the App. You affirm that you have the necessary rights to the content you post.</p>
-            
-            <h4>4. Governing Law</h4>
-            <p>These terms shall be governed by the laws of the State of Oregon, United States, without regard to its conflict of law provisions.</p>
-
-            <hr>
-
-            <h3>Privacy Policy</h3>
-            <p>Your privacy is important to us. This policy outlines how we handle your data.</p>
-
-            <h4>1. Information We Collect</h4>
-            <ul>
-                <li><strong>Anonymous User ID:</strong> To save your game progress (level, XP, challenges), we assign you a unique, anonymous ID using Firebase Authentication. We do not require or store personal information like your name or email.</li>
-                <li><strong>Geolocation Data:</strong> We require access to your device's GPS to show your live location on the map. This is essential for the core functionality of exploring and adding spots. This location data is not stored historically.</li>
-                <li><strong>Uploaded Content:</strong> We collect and store the skate spots and videos you voluntarily create and upload. This content is stored in Firebase and may be publicly visible to other users of the App.</li>
-            </ul>
-
-            <h4>2. How We Use Information</h4>
-            <p>Your data is used exclusively to operate, maintain, and improve the SkateQuest app. We do not sell or share your data with third-party marketers.</p>
-
-            <h4>3. Data Security</h4>
-            <p>We use Google Firebase services to store and protect your data, relying on their robust security infrastructure to keep your information safe.</p>
-        `;
-            legalModal.style.display = 'block';
-        };
-    }
-
-    signIn();
-
+    // ====== REALTIME LISTENERS ======
     function setupRealtimeListeners() {
         if (!currentUserId) return;
+
+        // Listen to skate spots
         const spotsPath = `/artifacts/${appId}/public/data/skate_spots`;
-        onSnapshot(collection(db, spotsPath), s => { skateSpots = []; s.forEach(d => skateSpots.push({ id: d.id, ...d.data() })); renderMarkers(); }, e => console.error(e));
+        onSnapshot(collection(db, spotsPath), snapshot => {
+            skateSpots = [];
+            snapshot.forEach(d => skateSpots.push({ id: d.id, ...d.data() }));
+            renderMarkers();
+            updateSpotSelect();
+        }, error => console.error('Spots listener error:', error));
+
+        // Listen to user profile
         const profilePath = `/artifacts/${appId}/users/${currentUserId}/profile/data`;
-        onSnapshot(doc(db, profilePath), async d => {
-            if (d.exists()) { userProfile = d.data(); } 
-            else { const p = { username: `Skater${Math.floor(Math.random() * 1000)}`, level: 1, xp: 0, spotsAdded: 0, challengesCompleted: [], createdAt: serverTimestamp() }; await setDoc(doc(db, profilePath), p); userProfile = p; }
-            if (profileBtn.classList.contains('active')) renderProfile();
-        }, e => console.error(e));
+        onSnapshot(doc(db, profilePath), async docSnap => {
+            if (docSnap.exists()) {
+                userProfile = docSnap.data();
+            } else {
+                const newProfile = {
+                    username: `Skater${Math.floor(Math.random() * 1000)}`,
+                    level: 1,
+                    xp: 0,
+                    spotsAdded: 0,
+                    challengesCompleted: [],
+                    streak: 0,
+                    createdAt: serverTimestamp()
+                };
+                await setDoc(doc(db, profilePath), newProfile);
+                userProfile = newProfile;
+            }
+            
+            // Update profile view if active
+            if (profileBtn && profileBtn.classList.contains('active')) {
+                renderProfile();
+            }
+            
+            // Update leaderboard
+            updateLeaderboard();
+        }, error => console.error('Profile listener error:', error));
+
+        // Listen to pending challenges
+        const challengesPath = `/artifacts/${appId}/public/data/challenges`;
+        onSnapshot(collection(db, challengesPath), snapshot => {
+            const challenges = [];
+            snapshot.forEach(d => challenges.push({ id: d.id, ...d.data() }));
+            renderPendingChallenges(challenges);
+        }, error => console.error('Challenges listener error:', error));
     }
 
+    // ====== GPS TRACKING ======
     function startGpsTracking() {
-        if (!navigator.geolocation) return showModal("Geolocation is not supported.");
-        const userIcon = L.divIcon({ className: 'user-location-marker', iconSize: [18, 18] });
-        navigator.geolocation.watchPosition(pos => {
-            currentUserPosition = [pos.coords.latitude, pos.coords.longitude];
-            if (!userLocationMarker) { userLocationMarker = L.marker(currentUserPosition, { icon: userIcon }).addTo(map); map.setView(currentUserPosition, 16); } 
-            else { userLocationMarker.setLatLng(currentUserPosition); }
-        }, e => { if (e.code === 1) showModal("Please enable location services."); }, { enableHighAccuracy: true });
+        if (!navigator.geolocation) {
+            return showModal("Geolocation is not supported.");
+        }
+
+        const userIcon = L.divIcon({
+            className: 'user-location-marker',
+            iconSize: [20, 20]
+        });
+
+        navigator.geolocation.watchPosition(
+            pos => {
+                currentUserPosition = [pos.coords.latitude, pos.coords.longitude];
+                if (!userLocationMarker) {
+                    userLocationMarker = L.marker(currentUserPosition, { icon: userIcon }).addTo(map);
+                    map.setView(currentUserPosition, 16);
+                } else {
+                    userLocationMarker.setLatLng(currentUserPosition);
+                }
+            },
+            error => {
+                if (error.code === 1) showModal("Please enable location services.");
+            },
+            { enableHighAccuracy: true }
+        );
     }
 
-    if (centerMapBtn) {
-        centerMapBtn.onclick = () => {
-            if (currentUserPosition) map.setView(currentUserPosition, 16);
-            else showModal("Finding your location...");
-        };
-    }
-
+    // ====== RENDER MARKERS ======
     function renderMarkers() {
         markers.forEach(m => map.removeLayer(m));
         markers = [];
+
         skateSpots.forEach(spot => {
             if (spot.coords && spot.coords.latitude && spot.coords.longitude) {
                 const marker = L.marker([spot.coords.latitude, spot.coords.longitude]).addTo(map);
-        
+
                 let popupContent = `
-                    <strong>${spot.name}</strong><br/>
-                    ${spot.imageUrl ? `<img src="${spot.imageUrl}" alt="${spot.name}" style="max-width:150px;border-radius:8px;margin-top:5px;"/><br/>` : ''}
-                    Difficulty: ${spot.difficulty}<br/>
-                    Tricks: ${spot.tricks ? spot.tricks.join(', ') : 'None'}<br/>
-                    ${spot.videoUrl ? `<br/><video src="${spot.videoUrl}" controls></video><br/>` : ''}
-
-                    <h4>Challenges:</h4>
-                    <ul id="challengesList-${spot.id}"></ul>
-                    <br/>
-
-                    <form id="addChallengeForm-${spot.id}">
-                        <label>New Challenge:<br/>
-                        <input type="text" id="challengeText-${spot.id}" placeholder="e.g., Land a kickflip down the stairs" required></label>
-                        <button type="submit">Add Challenge</button>
-                    </form>
+                    <div style="min-width:200px;">
+                        <strong style="font-size:1.2rem; color:#FF5722;">${spot.name}</strong><br/>
+                        ${spot.imageUrl ? `<img src="${spot.imageUrl}" alt="${spot.name}" style="max-width:200px; border-radius:8px; margin:8px 0;"/><br/>` : ''}
+                        <strong>Difficulty:</strong> ${spot.difficulty}<br/>
+                        <strong>Tricks:</strong> ${spot.tricks ? spot.tricks.join(', ') : 'None'}<br/>
+                        ${spot.videoUrl ? `<br/><video src="${spot.videoUrl}" controls style="max-width:200px; border-radius:8px;"></video><br/>` : ''}
+                        
+                        <div style="margin-top:12px;">
+                            <h4 style="color:#FF5722; margin:8px 0;">Challenges:</h4>
+                            <ul id="challengesList-${spot.id}" style="padding-left:20px; margin:8px 0;"></ul>
+                            
+                            <form id="addChallengeForm-${spot.id}" style="margin-top:12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:600;">New Challenge:</label>
+                                <input type="text" 
+                                       id="challengeText-${spot.id}" 
+                                       placeholder="e.g., Land a kickflip down the stairs" 
+                                       required 
+                                       style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd; margin-bottom:8px;">
+                                <button type="submit" style="background:#FF5722; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; width:100%;">
+                                    Add Challenge
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 `;
-        
+
                 marker.bindPopup(popupContent);
                 markers.push(marker);
-        
+
                 marker.on('popupopen', () => {
-                    // Add the spot ID to the popup's HTML element
-                    marker.getPopup()._content.parentElement.dataset.spotId = spot.id;
+                    const popup = marker.getPopup();
+                    if (popup && popup._contentNode) {
+                        popup._contentNode.dataset.spotId = spot.id;
+                    }
+                    
                     const form = document.getElementById(`addChallengeForm-${spot.id}`);
-                    form.onsubmit = (e) => {
-                        e.preventDefault();
-                        addChallengeToSpot(spot.id);
-                    };
+                    if (form) {
+                        form.onsubmit = (e) => {
+                            e.preventDefault();
+                            addChallengeToSpot(spot.id);
+                        };
+                    }
+                    
                     renderChallengesForSpot(spot.id);
                 });
             }
         });
     }
 
-    // New function to add a challenge to a spot
+    // ====== CHALLENGE MANAGEMENT ======
     async function addChallengeToSpot(spotId) {
         if (!currentUserId) {
             showModal("You must be logged in to add a challenge.");
             return;
         }
-        const challengeText = document.getElementById(`challengeText-${spotId}`).value;
-        if (!challengeText.trim()) {
+
+        const challengeText = document.getElementById(`challengeText-${spotId}`)?.value;
+        if (!challengeText || !challengeText.trim()) {
             return;
         }
 
@@ -231,240 +306,438 @@ document.addEventListener('DOMContentLoaded', async () => {
                 createdAt: serverTimestamp(),
                 completedBy: []
             });
-            document.getElementById(`challengeText-${spotId}`).value = '';
-            showModal("Challenge added!");
+            
+            const input = document.getElementById(`challengeText-${spotId}`);
+            if (input) input.value = '';
+            
+            showToast("Challenge added! 🔥");
         } catch (error) {
-            console.error("Error adding challenge: ", error);
+            console.error("Error adding challenge:", error);
             showModal("Failed to add challenge.");
         }
     }
 
-    // Updated function to render challenges for a specific spot with a "Complete" button
     function renderChallengesForSpot(spotId) {
         const challengesList = document.getElementById(`challengesList-${spotId}`);
         if (!challengesList) return;
 
-        onSnapshot(collection(db, `/artifacts/${appId}/public/data/skate_spots/${spotId}/challenges`), (snapshot) => {
-            challengesList.innerHTML = '';
-            snapshot.forEach(doc => {
-                const challenge = doc.data();
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    ${challenge.description}
-                    <button class="complete-challenge-btn" data-challenge-id="${doc.id}">Complete</button>
-                `;
-                challengesList.appendChild(li);
-            });
-        }, (error) => {
-            console.error("Error getting challenges: ", error);
-            challengesList.innerHTML = '<li>Failed to load challenges.</li>';
-        });
+        onSnapshot(
+            collection(db, `/artifacts/${appId}/public/data/skate_spots/${spotId}/challenges`),
+            snapshot => {
+                challengesList.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const challenge = docSnap.data();
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '8px';
+                    li.innerHTML = `
+                        <span>${challenge.description}</span>
+                        <button class="complete-challenge-btn" 
+                                data-challenge-id="${docSnap.id}" 
+                                data-spot-id="${spotId}"
+                                style="background:#2ecc71; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer; margin-left:8px; font-size:0.85rem;">
+                            ✓ Complete
+                        </button>
+                    `;
+                    challengesList.appendChild(li);
+                });
+            },
+            error => {
+                console.error("Error getting challenges:", error);
+                challengesList.innerHTML = '<li style="color:#e74c3c;">Failed to load challenges.</li>';
+            }
+        );
     }
 
-    // New event listener for all "Complete" buttons
+    // Event delegation for challenge completion
     document.addEventListener('click', async (e) => {
         if (e.target.classList.contains('complete-challenge-btn')) {
             const challengeId = e.target.dataset.challengeId;
-            const spotId = e.target.closest('.leaflet-popup-pane').dataset.spotId;
-            completeChallenge(spotId, challengeId);
+            const spotId = e.target.dataset.spotId;
+            if (challengeId && spotId) {
+                completeChallenge(spotId, challengeId);
+            }
         }
     });
 
-    // New function to handle challenge completion
     async function completeChallenge(spotId, challengeId) {
         if (!currentUserId) {
             showModal("You must be logged in to complete a challenge.");
             return;
         }
-        
-        showModal("Completing challenge... please wait.");
-        
+
+        showToast("Completing challenge...");
+
         try {
             const challengeRef = doc(db, `/artifacts/${appId}/public/data/skate_spots/${spotId}/challenges/${challengeId}`);
             const challengeDoc = await getDoc(challengeRef);
-            const challengeData = challengeDoc.data();
             
-            // Add user to the list of people who have completed this challenge
+            if (!challengeDoc.exists()) {
+                showModal("Challenge not found.");
+                return;
+            }
+
+            const challengeData = challengeDoc.data();
             const completedBy = [...(challengeData.completedBy || []), currentUserId];
-            await updateDoc(challengeRef, { completedBy: completedBy });
+            
+            await updateDoc(challengeRef, { completedBy });
+            await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), {
+                xp: increment(100),
+                challengesCompleted: increment(1)
+            });
 
-            // Reward the user with XP
-            await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), { xp: increment(100) });
-
-            showModal("Challenge completed! You earned 100 XP!");
+            showToast("Challenge completed! +100 XP! 🔥");
         } catch (error) {
-            console.error("Error completing challenge: ", error);
+            console.error("Error completing challenge:", error);
             showModal("Failed to complete challenge.");
         }
     }
 
-    if (discoverBtn) {
-        discoverBtn.onclick = () => { setActiveButton(discoverBtn); content.innerHTML = '<p>Use the map to discover skate spots. Tap markers for details.</p>'; };
+    // ====== RENDER PENDING CHALLENGES ======
+    function renderPendingChallenges(challenges) {
+        const pendingList = document.getElementById('pending-challenges-list');
+        if (!pendingList) return;
+
+        if (challenges.length === 0) {
+            pendingList.innerHTML = `
+                <div style="text-align:center; padding:2rem; color:var(--text-secondary);">
+                    No active challenges yet. Be the first to issue one! 🚀
+                </div>
+            `;
+            return;
+        }
+
+        pendingList.innerHTML = '';
+        
+        challenges.forEach(challenge => {
+            const card = document.createElement('div');
+            card.className = 'challenge-card';
+            
+            const difficultyClass = 
+                challenge.difficulty === 'Insane' ? 'difficulty-insane' :
+                challenge.difficulty === 'Gnarly' ? 'difficulty-gnarly' :
+                'difficulty-medium';
+            
+            const statusClass = challenge.status === 'in_progress' ? 'status-in-progress' : '';
+            
+            card.innerHTML = `
+                <div class="challenge-header">
+                    <div>
+                        <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem;">
+                            <strong style="color:var(--primary-orange);">${challenge.challengerName || 'Anonymous'}</strong> called out:
+                        </div>
+                        <h3 class="challenge-title">${challenge.trick || 'Unknown Trick'}</h3>
+                        ${challenge.title ? `<p style="margin:0.5rem 0; color:var(--text-secondary);">${challenge.title}</p>` : ''}
+                    </div>
+                    <div class="challenge-stake">${challenge.xp || 500} pts</div>
+                </div>
+                
+                <div class="challenge-info">
+                    <span class="challenge-badge ${difficultyClass}">
+                        ${challenge.difficulty || 'Medium'}
+                    </span>
+                    ${challenge.status === 'in_progress' ? `
+                        <span class="challenge-badge status-in-progress">In Progress</span>
+                    ` : ''}
+                    <span style="color:var(--text-secondary); font-size:0.9rem;">
+                        📍 ${challenge.spotName || 'Unknown Location'}
+                    </span>
+                </div>
+                
+                ${challenge.description ? `
+                    <p style="margin-top:1rem; color:var(--text-secondary); font-size:0.9rem;">
+                        ${challenge.description}
+                    </p>
+                ` : ''}
+                
+                <div style="display:flex; gap:1rem; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
+                    <button class="btn-primary" style="flex:1;" onclick="acceptChallenge('${challenge.id}')">
+                        🎥 Accept & Film
+                    </button>
+                </div>
+            `;
+            
+            pendingList.appendChild(card);
+        });
     }
 
-    // Helper to show the Add Spot form for given coordinates
-    function showAddSpotForm(lat = '', lng = '') {
-        setActiveButton(addSpotBtn);
-        recordedVideoUrl = null;
-        content.innerHTML = `
-            <h3>Add New Spot</h3>
-            <p>Tap Save to add the spot at the selected location.</p>
-            <form id="addSpotForm">
-                <label>Name:<br/><input type="text" id="spotName" required /></label>
-                <label>Latitude:<br/><input type="number" step="any" id="spotLat" value="${lat}" required /></label>
-                <label>Longitude:<br/><input type="number" step="any" id="spotLng" value="${lng}" required /></label>
-                <label>Difficulty:<br/><select id="spotDifficulty"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label>
-                <label>Tricks (comma separated):<br/><input type="text" id="spotTricks" /></label>
-                <label>Photo (optional):<br/><input type="file" id="spotImageInput" accept="image/*" /></label>
-                <div id="spotImagePreview"></div>
-                <button type="button" id="recordVideoBtn">Record Trick 🎥</button>
-                <div id="videoStatus"></div>
-                <button type="submit">Add Spot</button>
-                <button type="button" id="cancelAddSpotBtn">Cancel</button>
-            </form>
-        `;
-        document.getElementById('recordVideoBtn').onclick = () => openCamera();
-        document.getElementById('cancelAddSpotBtn').onclick = () => { 
-            mapClickToAdd = false; 
-            if (tempAddMarker) { map.removeLayer(tempAddMarker); tempAddMarker = null; }
-            content.innerHTML = ''; 
-            setActiveButton(discoverBtn); 
+    window.acceptChallenge = function(challengeId) {
+        showToast("Open camera to film your proof! 🎥");
+        openCamera();
+    };
+
+    // ====== LEADERBOARD ======
+    async function updateLeaderboard() {
+        const leaderboardList = document.getElementById('leaderboard-list');
+        if (!leaderboardList) return;
+
+        try {
+            const usersQuery = query(
+                collectionGroup(db, 'profile'),
+                orderBy('xp', 'desc'),
+                limit(10)
+            );
+            
+            const snapshot = await getDocs(usersQuery);
+            
+            if (snapshot.empty) {
+                leaderboardList.innerHTML = '<div style="text-align:center; padding:1rem; color:var(--text-secondary);">No skaters yet!</div>';
+                return;
+            }
+
+            leaderboardList.innerHTML = '';
+            let rank = 1;
+            
+            snapshot.forEach(docSnap => {
+                const profile = docSnap.data();
+                const div = document.createElement('div');
+                
+                const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <span style="font-size:1.5rem; font-weight:900;">${rankEmoji}</span>
+                        <div style="flex:1;">
+                            <div style="font-weight:700; font-size:1.1rem;">${profile.username || 'Unknown'}</div>
+                            <div style="font-size:0.85rem; color:var(--text-secondary);">
+                                Level ${profile.level || 1} • ${profile.xp || 0} XP
+                                ${profile.streak > 0 ? `• 🔥 ${profile.streak} day streak` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                leaderboardList.appendChild(div);
+                rank++;
+            });
+        } catch (error) {
+            console.error('Error updating leaderboard:', error);
+            leaderboardList.innerHTML = '<div style="color:var(--danger);">Failed to load leaderboard</div>';
+        }
+    }
+
+    // ====== DAILY CHALLENGE ======
+    async function loadDailyChallenge() {
+        const banner = document.getElementById('daily-challenge-banner');
+        if (!banner) return;
+
+        try {
+            const dailyChallengeDoc = await getDoc(doc(db, `/artifacts/${appId}/public/data/daily_challenges/current`));
+            
+            if (dailyChallengeDoc.exists()) {
+                dailyChallengeData = dailyChallengeDoc.data();
+                
+                document.getElementById('daily-challenge-trick').textContent = dailyChallengeData.trick || 'Mystery Trick';
+                document.getElementById('daily-challenge-points').textContent = `${dailyChallengeData.xp || 500} pts`;
+                document.getElementById('daily-challenge-time').textContent = '⏰ 24h remaining';
+                
+                const meta = document.getElementById('daily-challenge-meta');
+                meta.innerHTML = `
+                    <span class="challenge-badge difficulty-${dailyChallengeData.difficulty.toLowerCase()}">${dailyChallengeData.difficulty}</span>
+                    <span>👥 ${dailyChallengeData.participants || 0} attempting</span>
+                `;
+                
+                banner.style.display = 'block';
+            } else {
+                // Create a default daily challenge
+                const defaultChallenge = {
+                    trick: 'Kickflip over 5-stair',
+                    difficulty: 'Medium',
+                    xp: 500,
+                    participants: 0,
+                    createdAt: serverTimestamp()
+                };
+                
+                await setDoc(doc(db, `/artifacts/${appId}/public/data/daily_challenges/current`), defaultChallenge);
+                dailyChallengeData = defaultChallenge;
+                
+                banner.style.display = 'block';
+                loadDailyChallenge(); // Reload to display
+            }
+        } catch (error) {
+            console.error('Error loading daily challenge:', error);
+        }
+    }
+
+    document.getElementById('accept-daily-challenge')?.addEventListener('click', () => {
+        showToast("Daily challenge accepted! Film your trick! 🎥");
+        openCamera();
+    });
+
+    // ====== GIVING BACK STATS ======
+    async function loadGivingBackStats() {
+        try {
+            const statsDoc = await getDoc(doc(db, `/artifacts/${appId}/public/data/giving_back/stats`));
+            
+            if (statsDoc.exists()) {
+                givingBackStats = statsDoc.data();
+            } else {
+                givingBackStats = { raised: 0, boardsDonated: 0, activeQRs: 0 };
+                await setDoc(doc(db, `/artifacts/${appId}/public/data/giving_back/stats`), givingBackStats);
+            }
+            
+            updateGivingBackDisplay();
+        } catch (error) {
+            console.error('Error loading giving back stats:', error);
+        }
+    }
+
+    function updateGivingBackDisplay() {
+        document.getElementById('total-raised').textContent = `$${givingBackStats.raised.toLocaleString()}`;
+        document.getElementById('boards-donated').textContent = givingBackStats.boardsDonated;
+        document.getElementById('active-qrs').textContent = givingBackStats.activeQRs;
+    }
+
+    // ====== USER QR STATS ======
+    async function loadUserQRStats() {
+        if (!currentUserId) return;
+        
+        try {
+            const userQRDoc = await getDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/qr_stats/data`));
+            
+            if (userQRDoc.exists()) {
+                userQRStats = userQRDoc.data();
+            } else {
+                userQRStats = { hidden: 0, found: 0 };
+            }
+            
+            document.getElementById('user-qrs-hidden').textContent = userQRStats.hidden;
+            document.getElementById('user-qrs-found').textContent = userQRStats.found;
+        } catch (error) {
+            console.error('Error loading user QR stats:', error);
+        }
+    }
+
+    // ====== NAVIGATION HANDLERS ======
+    if (discoverBtn) {
+        discoverBtn.onclick = () => {
+            setActiveButton(discoverBtn);
+            
+            // Show map-related elements
+            document.getElementById('daily-challenge-banner').style.display = 'block';
+            document.getElementById('leaderboard').style.display = 'block';
+            document.getElementById('pending-challenges').style.display = 'block';
+            
+            // Hide other sections
+            document.getElementById('challenge-panel')?.style.display = 'none';
+            document.getElementById('qr-hunt-section')?.style.display = 'none';
+            document.getElementById('giving-back-banner')?.style.display = 'none';
+            
+            content.scrollIntoView({ behavior: 'smooth' });
         };
+    }
 
-        // Spot image handling
-        const spotImageInput = document.getElementById('spotImageInput');
-        const spotImagePreview = document.getElementById('spotImagePreview');
-        let selectedSpotImageFile = null;
-        spotImageInput.onchange = (ev) => {
-            const f = ev.target.files && ev.target.files[0];
-            if (!f) { selectedSpotImageFile = null; spotImagePreview.innerHTML = ''; return; }
-            // quick client-side checks
-            if (f.size > 5 * 1024 * 1024) { showModal('Image too large (max 5MB).'); spotImageInput.value = ''; selectedSpotImageFile = null; spotImagePreview.innerHTML = ''; return; }
-            if (!f.type.startsWith('image/')) { showModal('Only image files are allowed.'); spotImageInput.value = ''; selectedSpotImageFile = null; spotImagePreview.innerHTML = ''; return; }
-            selectedSpotImageFile = f;
-            spotImagePreview.innerHTML = `<img src="${URL.createObjectURL(f)}" style="max-width:200px;border-radius:8px;margin-top:0.5em;"/>`;
+    if (challengesBtn) {
+        challengesBtn.onclick = () => {
+            setActiveButton(challengesBtn);
+            
+            document.getElementById('pending-challenges').style.display = 'block';
+            document.getElementById('challenge-panel').style.display = 'block';
+            
+            document.getElementById('daily-challenge-banner').style.display = 'none';
+            document.getElementById('leaderboard').style.display = 'none';
+            document.getElementById('qr-hunt-section')?.style.display = 'none';
+            document.getElementById('giving-back-banner')?.style.display = 'none';
         };
+    }
 
-        document.getElementById('addSpotForm').onsubmit = async (e) => {
-            e.preventDefault();
-            if (!currentUserId) return showModal("You must be signed in.");
-            const newSpot = {
-                name: document.getElementById('spotName').value.trim(),
-                coords: { latitude: parseFloat(document.getElementById('spotLat').value), longitude: parseFloat(document.getElementById('spotLng').value) },
-                difficulty: document.getElementById('spotDifficulty').value,
-                tricks: document.getElementById('spotTricks').value.split(',').map(t => t.trim()).filter(Boolean),
-                addedBy: currentUserId, createdAt: serverTimestamp(),
-                ...(recordedVideoUrl && { videoUrl: recordedVideoUrl })
-            };
-            try {
-                // If a spot image was selected, upload it first and attach URL
-                if (selectedSpotImageFile) {
-                    const imgName = `${currentUserId}/${Date.now()}_${selectedSpotImageFile.name}`;
-                    const imgRef = ref(storage, `spot_images/${imgName}`);
-                    const uploadResult = await uploadBytes(imgRef, selectedSpotImageFile);
-                    newSpot.imageUrl = await getDownloadURL(uploadResult.ref);
-                }
+    if (qrHuntBtn) {
+        qrHuntBtn.onclick = () => {
+            setActiveButton(qrHuntBtn);
+            
+            document.getElementById('qr-hunt-section').style.display = 'block';
+            
+            document.getElementById('daily-challenge-banner').style.display = 'none';
+            document.getElementById('leaderboard').style.display = 'none';
+            document.getElementById('pending-challenges').style.display = 'none';
+            document.getElementById('challenge-panel')?.style.display = 'none';
+            document.getElementById('giving-back-banner')?.style.display = 'none';
+        };
+    }
 
-                await addDoc(collection(db, `/artifacts/${appId}/public/data/skate_spots`), newSpot);
-                await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), { spotsAdded: increment(1), xp: increment(100) });
-                showModal('Spot added! You earned 100 XP!');
-                mapClickToAdd = false;
-                if (tempAddMarker) { map.removeLayer(tempAddMarker); tempAddMarker = null; }
-                if (discoverBtn) discoverBtn.click();
-            } catch (error) { console.error("Error adding spot: ", error); showModal("Failed to add spot."); }
+    if (givingBackBtn) {
+        givingBackBtn.onclick = () => {
+            setActiveButton(givingBackBtn);
+            
+            document.getElementById('giving-back-banner').style.display = 'block';
+            
+            document.getElementById('daily-challenge-banner').style.display = 'none';
+            document.getElementById('leaderboard').style.display = 'none';
+            document.getElementById('pending-challenges').style.display = 'none';
+            document.getElementById('challenge-panel')?.style.display = 'none';
+            document.getElementById('qr-hunt-section')?.style.display = 'none';
         };
     }
 
     if (addSpotBtn) {
         addSpotBtn.onclick = () => {
-            // Toggle map-click-to-add mode. When enabled, user clicks map to place a spot.
             if (mapClickToAdd) {
                 mapClickToAdd = false;
-                if (tempAddMarker) { map.removeLayer(tempAddMarker); tempAddMarker = null; }
+                if (tempAddMarker) {
+                    map.removeLayer(tempAddMarker);
+                    tempAddMarker = null;
+                }
                 setActiveButton(null);
-                content.innerHTML = '<p>Map click-to-add canceled.</p>';
+                showToast("Map click-to-add canceled.");
                 return;
             }
+            
             mapClickToAdd = true;
             setActiveButton(addSpotBtn);
-            content.innerHTML = '<p>Click anywhere on the map to add a new spot. Click the "Add Spot" button again to cancel.</p>';
+            showToast("Click anywhere on the map to add a new spot!");
         };
-    }
-
-    async function openCamera() {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return showModal("Camera not supported on your browser.");
-        if (!cameraModal || !cameraPreview || !recordBtn || !stopRecordBtn || !saveVideoBtn) {
-            return showModal("Camera UI not available.");
-        }
-        try {
-            videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
-            cameraModal.style.display = "block";
-            cameraPreview.srcObject = videoStream;
-            recordBtn.style.display = 'inline-block';
-            stopRecordBtn.style.display = 'none';
-            saveVideoBtn.style.display = 'none';
-        } catch (err) { console.error("Camera Error:", err); showModal("Could not access camera. Please check permissions."); }
-    }
-
-    if (recordBtn) {
-        recordBtn.onclick = () => {
-            recordedChunks = [];
-            mediaRecorder = new MediaRecorder(videoStream);
-            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
-            mediaRecorder.onstop = () => {
-                const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-                if (cameraPreview) {
-                    cameraPreview.srcObject = null;
-                    cameraPreview.src = URL.createObjectURL(videoBlob);
-                }
-                if (saveVideoBtn) saveVideoBtn.style.display = 'inline-block';
-            };
-            mediaRecorder.start();
-            recordBtn.style.display = 'none';
-            if (stopRecordBtn) stopRecordBtn.style.display = 'inline-block';
-        };
-    }
-
-    if (stopRecordBtn) {
-        stopRecordBtn.onclick = () => { mediaRecorder.stop(); stopRecordBtn.style.display = 'none'; };
-    }
-    
-    if (saveVideoBtn) {
-        saveVideoBtn.onclick = async () => {
-        showModal("Uploading video...");
-        const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-        const videoFileName = `${currentUserId}_${Date.now()}.webm`;
-        const storageRef = ref(storage, `skate_spots_videos/${videoFileName}`);
-        try {
-            const snapshot = await uploadBytes(storageRef, videoBlob);
-            recordedVideoUrl = await getDownloadURL(snapshot.ref);
-            document.getElementById('videoStatus').innerHTML = `<p>✅ Video attached!</p>`;
-            closeCamera();
-            showModal("Video uploaded successfully!");
-        } catch (error) {
-            console.error("Upload failed", error);
-            showModal("Video upload failed. Please try again. (Note: Storage setup may be incomplete).");
-        }
-        };
-    }
-
-    function closeCamera() {
-        if (videoStream) {
-            videoStream.getTracks().forEach(track => track.stop());
-        }
-        if (cameraModal) cameraModal.style.display = "none";
-        if (cameraPreview) {
-            cameraPreview.srcObject = null;
-            cameraPreview.src = '';
-        }
-    }
-
-    function renderProfile() {
-        const xpNext = (userProfile.level || 1) * 100;
-        content.innerHTML = `<h3>${userProfile.username || 'Skater'}'s Profile</h3><p><strong>User ID:</strong> ${currentUserId}</p><p>Level: ${userProfile.level || 1}</p><p>XP: ${userProfile.xp || 0} / ${xpNext}</p><progress value="${userProfile.xp || 0}" max="${xpNext}"></progress><p>Spots Added: ${userProfile.spotsAdded || 0}</p><p>Challenges Completed: ${userProfile.challengesCompleted ? userProfile.challengesCompleted.length : 0}</p>`;
     }
 
     if (profileBtn) {
-        profileBtn.onclick = () => { setActiveButton(profileBtn); renderProfile(); };
+        profileBtn.onclick = () => {
+            setActiveButton(profileBtn);
+            renderProfile();
+            
+            // Hide other sections
+            document.getElementById('daily-challenge-banner').style.display = 'none';
+            document.getElementById('leaderboard').style.display = 'none';
+            document.getElementById('pending-challenges').style.display = 'none';
+            document.getElementById('challenge-panel')?.style.display = 'none';
+            document.getElementById('qr-hunt-section')?.style.display = 'none';
+            document.getElementById('giving-back-banner')?.style.display = 'none';
+        };
     }
-});
+
+    if (legalBtn) {
+        legalBtn.onclick = () => {
+            setActiveButton(legalBtn);
+            showLegalModal();
+        };
+    }
+
+    // ====== ADD SPOT FORM ======
+    function showAddSpotForm(lat = '', lng = '') {
+        setActiveButton(addSpotBtn);
+        recordedVideoUrl = null;
+        
+        // Hide other sections
+        document.getElementById('daily-challenge-banner').style.display = 'none';
+        document.getElementById('leaderboard').style.display = 'none';
+        document.getElementById('pending-challenges').style.display = 'none';
+        
+        content.innerHTML = `
+            <div class="panel">
+                <h2>Add New Skate Spot</h2>
+                <p style="margin-bottom:1.5rem; color:var(--text-secondary);">
+                    Fill in the details below to add this spot to the map.
+                </p>
+                
+                <form id="addSpotForm">
+                    <label>Spot Name:</label>
+                    <input type="text" id="spotName" placeholder="e.g., Downtown 10-stair" required />
+                    
+                    <label>Latitude:</label>
+                    <input type="number" step="any" id="spotLat" value="${lat}" required />
+                    
+                    <label>Longitude:</label>
+                    <input type="number" step="any" id="spotLng" value="${lng}" required />
+                    
+                    <label>Difficulty:</label>
+                    <select id="spotDifficulty">
+                        <option>Beginner</option>
+                        <option>Intermediate</option>
+                        <option selected>Advance
