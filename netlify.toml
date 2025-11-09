@@ -11,4 +11,23 @@
   # to be served with their correct MIME types. Netlify will fallback to index.html for
   # navigation requests automatically when files are not found.
 
-# No build step needed — this is a plain static site. Netlify will serve files from the project root.
+# Disable unnecessary plugins for static site
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    disable = true
+
+[[plugins]]
+  package = "netlify-plugin-cypress"
+  [plugins.inputs]
+    disable = true
+
+[[plugins]]
+  package = "@algolia/netlify-plugin-crawler"
+  [plugins.inputs]
+    disable = true
+
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+  [plugins.inputs]
+    disable = true
