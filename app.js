@@ -1,21 +1,69 @@
 // Copyright (c) 2024 Your Name / SkateQuest. All Rights Reserved.
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await new Promise(resolve => {
+    // Wait for Firebase with timeout protection
+    await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            console.warn('Firebase initialization timeout, proceeding anyway...');
+            resolve();
+        }, 10000); // 10 second timeout
+
         const interval = setInterval(() => {
             if (window.firebaseInstances) {
                 clearInterval(interval);
+                clearTimeout(timeout);
                 resolve();
             }
         }, 100);
     });
 
-    const { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, appId, query, where, getDocs } = window.firebaseInstances;
+    // Safely extract Firebase instances with error handling
+    let db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, appId, query, where, getDocs;
 
-    const map = L.map('map').setView([45.6387, -122.6615], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map);
+    try {
+        const instances = window.firebaseInstances || {};
+        ({ db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, appId, query, where, getDocs } = instances);
+
+        if (!db || !auth) {
+            console.error('Firebase not properly initialized');
+            showModal('App initialization error. Please refresh the page.');
+            return;
+        }
+    } catch (error) {
+        console.error('Error loading Firebase instances:', error);
+        return;
+    }
+
+    // Initialize map with error handling
+    let map;
+    try {
+        const mapElement = document.getElementById('map');
+        if (!mapElement) {
+            console.error('Map element not found');
+            return;
+        }
+
+        map = L.map('map').setView([45.6387, -122.6615], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19,
+            errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+        }).addTo(map);
+
+        // Expose map globally for error recovery
+        window.map = map;
+
+        // Fix map rendering on resize
+        window.addEventListener('resize', () => {
+            if (map) {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        });
+    } catch (error) {
+        console.error('Map initialization error:', error);
+        showModal('Map failed to load. Please refresh the page.');
+        return;
+    }
 
     // When user clicks on the map while in add mode, show the add form at that coord
     map.on('click', (e) => {
@@ -89,8 +137,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function signIn() {
         try {
-            await signInAnonymously(auth);
-        } catch (error) { console.error("Error signing in:", error); showModal("Could not connect. Please refresh."); }
+            if (!auth) {
+                console.error('Auth not initialized');
+                return;
+            }
+            await window.firebaseRetry(async () => {
+                await signInAnonymously(auth);
+            }, 'Sign in');
+        } catch (error) {
+            console.error("Error signing in:", error);
+            showModal("Could not connect. Check your internet and refresh.");
+        }
     }
 
     if (legalBtn && legalText && legalModal) {
@@ -415,21 +472,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ...(recordedVideoUrl && { videoUrl: recordedVideoUrl })
             };
             try {
-                // If a spot image was selected, upload it first and attach URL
+                showModal('Adding spot...');
+
+                // If a spot image was selected, upload it first and attach URL with retry
                 if (selectedSpotImageFile) {
-                    const imgName = `${currentUserId}/${Date.now()}_${selectedSpotImageFile.name}`;
-                    const imgRef = ref(storage, `spot_images/${imgName}`);
-                    const uploadResult = await uploadBytes(imgRef, selectedSpotImageFile);
-                    newSpot.imageUrl = await getDownloadURL(uploadResult.ref);
+                    await window.firebaseRetry(async () => {
+                        const imgName = `${currentUserId}/${Date.now()}_${selectedSpotImageFile.name}`;
+                        const imgRef = ref(storage, `spot_images/${imgName}`);
+                        const uploadResult = await uploadBytes(imgRef, selectedSpotImageFile);
+                        newSpot.imageUrl = await getDownloadURL(uploadResult.ref);
+                    }, 'Image upload');
                 }
 
-                await addDoc(collection(db, `/artifacts/${appId}/public/data/skate_spots`), newSpot);
-                await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), { spotsAdded: increment(1), xp: increment(100) });
+                // Add spot with retry
+                await window.firebaseRetry(async () => {
+                    await addDoc(collection(db, `/artifacts/${appId}/public/data/skate_spots`), newSpot);
+                    await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), { spotsAdded: increment(1), xp: increment(100) });
+                }, 'Add spot');
+
                 showModal('Spot added! You earned 100 XP!');
                 mapClickToAdd = false;
                 if (tempAddMarker) { map.removeLayer(tempAddMarker); tempAddMarker = null; }
                 if (discoverBtn) discoverBtn.click();
-            } catch (error) { console.error("Error adding spot: ", error); showModal("Failed to add spot."); }
+            } catch (error) {
+                console.error("Error adding spot: ", error);
+                showModal("Failed to add spot. Please check your connection and try again.");
+            }
         };
     }
 
