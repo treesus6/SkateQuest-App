@@ -26,6 +26,6 @@ jobs:
       - name: Deploy Firebase Rules
         run: |
           firebase deploy \
-            --only firestore:rules,storage:rules \
+            --only firestore:rules \
             --project "$FIREBASE_PROJECT_ID" \
             --token "$FIREBASE_TOKEN"

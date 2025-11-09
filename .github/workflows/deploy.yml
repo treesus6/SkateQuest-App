@@ -59,7 +59,7 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          firebase deploy --only firestore:rules,storage:rules --project skatequest-666 --token "$FIREBASE_TOKEN"
+          firebase deploy --only firestore:rules --project skatequest-666 --token "$FIREBASE_TOKEN"
           
   monitor-health:
     runs-on: ubuntu-latest
