@@ -1,33 +1,10 @@
-
 [build]
-  publish = "public"
-  command = "mkdir -p public && cp -r . public/ && rm -rf public/.git public/node_modules"
+  publish = "."
+  command = "echo 'Static site - no build required'"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  # Do not force index.html for every request; allow existing static files (JS, CSS, manifest)
-  # to be served with their correct MIME types. Netlify will fallback to index.html for
-  # navigation requests automatically when files are not found.
-
-# Disable unnecessary plugins for static site
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    disable = true
-
-[[plugins]]
-  package = "netlify-plugin-cypress"
-  [plugins.inputs]
-    disable = true
-
-[[plugins]]
-  package = "@algolia/netlify-plugin-crawler"
-  [plugins.inputs]
-    disable = true
-
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
-  [plugins.inputs]
-    disable = true
+  force = false
+  
