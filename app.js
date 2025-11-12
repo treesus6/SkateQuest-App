@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        map = L.map('map').setView([45.6387, -122.6615], 13);
+        const map = L.map('map', {/* options if any */}).setView([45.6387, -122.6615], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             maxZoom: 19,
@@ -52,6 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Expose map globally for error recovery
         window.map = map;
+        // Make the map available to integrations (parks layer, etc.)
+        window.sqMap = map;
 
         // Fix map rendering on resize
         window.addEventListener('resize', () => {
