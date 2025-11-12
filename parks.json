@@ -1,0 +1,44 @@
+[
+  {
+    "id": "venice-beach-skatepark",
+    "name": "Venice Beach Skatepark",
+    "type": "park",
+    "lat": 33.9850,
+    "lng": -118.4695
+  },
+  {
+    "id": "burnside-skatepark",
+    "name": "Burnside Skatepark",
+    "type": "park",
+    "lat": 45.5226,
+    "lng": -122.6637
+  },
+  {
+    "id": "les-coleman-skatepark",
+    "name": "LES Coleman Skatepark",
+    "type": "park",
+    "lat": 40.7179,
+    "lng": -73.9896
+  },
+  {
+    "id": "brooklyn-banks",
+    "name": "Brooklyn Banks",
+    "type": "spot",
+    "lat": 40.7101,
+    "lng": -73.9997
+  },
+  {
+    "id": "staples-center-street-spot",
+    "name": "LA Street Spot (Staples Center)",
+    "type": "spot",
+    "lat": 34.0430,
+    "lng": -118.2673
+  },
+  {
+    "id": "potrero-del-sol-skatepark",
+    "name": "Potrero del Sol Skatepark",
+    "type": "park",
+    "lat": 37.7488,
+    "lng": -122.4053
+  }
+]

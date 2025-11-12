@@ -107,9 +107,47 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => t.remove(), ttl);
     }
 
-    // Populate both selects in parallel using short endpoints
+    // Fallback loader for spots from a static JSON when functions/Firestore are unavailable
+    async function fallbackPopulateSpotsFromStatic() {
+        try {
+            const res = await fetch('/parks.json', { cache: 'no-cache' });
+            if (!res.ok) throw new Error(`parks.json not found (${res.status})`);
+            const parks = await res.json();
+            if (Array.isArray(parks) && parks.length && spotSelect) {
+                // populate the spot select
+                const placeholder = spotSelect.querySelector('option[disabled][data-placeholder]');
+                spotSelect.innerHTML = '';
+                if (placeholder) spotSelect.appendChild(placeholder);
+                parks.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id || p.name;
+                    opt.textContent = p.name;
+                    spotSelect.appendChild(opt);
+                });
+                // add markers to the map if available
+                if (window.map && window.L) {
+                    parks.forEach(p => {
+                        if (p.lat && p.lng) {
+                            L.marker([p.lat, p.lng]).addTo(map).bindPopup(p.name);
+                        }
+                    });
+                }
+                showToast(`Loaded ${parks.length} parks from static data`, 'info');
+            }
+        } catch (e) {
+            console.warn('fallbackPopulateSpotsFromStatic failed', e);
+        }
+    }
+
+    // Populate selects; for spots, try function first then fallback to static parks
     Promise.all([
-        populateSelect('/spots', spotSelect, 'name'),
+        (async () => {
+            try {
+                await populateSelect('/spots', spotSelect, 'name');
+            } catch (e) {
+                await fallbackPopulateSpotsFromStatic();
+            }
+        })(),
         populateSelect('/tricks', trickSelect, 'name')
     ]).catch(err => console.error('Failed to populate selects:', err));
 
@@ -302,6 +340,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const heatToggle = document.getElementById('heatmap-toggle');
     if (heatToggle) heatToggle.addEventListener('change', (e) => { if (e.target.checked) renderHeatmap(); else if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; } });
+
+    // Parks markers (static dataset from parks.json)
+    let parksMarkers = [];
+    async function loadParksMarkers() {
+        try {
+            const res = await fetch('/parks.json');
+            if (!res.ok) throw new Error('parks.json missing');
+            const parks = await res.json();
+            if (!Array.isArray(parks)) throw new Error('Invalid parks.json format');
+            if (!window.map || !window.L) return;
+            // Create marker for each park
+            parksMarkers = parks.map(p => {
+                if (!(p.lat && p.lng)) return null;
+                const m = L.marker([p.lat, p.lng], { title: p.name })
+                    .bindPopup(`<strong>${p.name}</strong><br/>${p.city || ''}`);
+                m.addTo(window.map);
+                return m;
+            }).filter(Boolean);
+            showToast(`Loaded ${parksMarkers.length} parks`, 'info');
+        } catch (e) {
+            console.warn('loadParksMarkers failed', e);
+            showToast('Failed to load parks data', 'error');
+        }
+    }
+    function clearParksMarkers() {
+        parksMarkers.forEach(m => { try { window.map.removeLayer(m); } catch(_){} });
+        parksMarkers = [];
+    }
+    const parksToggle = document.getElementById('parks-toggle');
+    if (parksToggle) parksToggle.addEventListener('change', (e) => {
+        if (e.target.checked) loadParksMarkers(); else clearParksMarkers();
+    });
 
     // Complete a challenge: award XP to a user
     async function callCompleteChallengeFunction(challengeId) {

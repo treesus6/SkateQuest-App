@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skatequest-cache-v8';
+const CACHE_NAME = 'skatequest-cache-v9';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -9,7 +9,8 @@ const urlsToCache = [
   '/icons/skatequest-icon-192.png',
   '/icons/skatequest-icon-512.png',
   '/icons/skatequest-icon-192.svg',
-  '/icons/skatequest-icon-512.svg'
+  '/icons/skatequest-icon-512.svg',
+  '/parks.json'
 ];
 
 // Cache essential files during service worker installation
