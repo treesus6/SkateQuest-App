@@ -8,6 +8,7 @@ env:
   NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
   NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
   FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+  DEPLOY_SITE_URL: ${{ vars.DEPLOY_SITE_URL || '' }}
 
 jobs:
   deploy-netlify:
@@ -21,12 +22,41 @@ jobs:
         run: npm install -g netlify-cli@latest
 
       - name: Deploy to Netlify
+        id: netlify_deploy
         run: |
           netlify deploy \
             --dir=. \
             --prod \
             --site="$NETLIFY_SITE_ID" \
             --auth="$NETLIFY_AUTH_TOKEN"
+
+      - name: Check Netlify deployment status
+        id: check_netlify_deploy
+        env:
+          DEPLOY_SITE_URL: ${{ env.DEPLOY_SITE_URL }}
+        run: |
+          # Prefer published URL from Netlify CLI output or fallback to known URLs
+          # Netlify CLI doesn't expose outputs directly, so we use env var or hard-coded URL
+          PUBLISHED_URL=""
+          
+          # Use env override or fallback to known Netlify URL
+          URL=${PUBLISHED_URL:-${DEPLOY_SITE_URL:-https://www.sk8quest.com}}
+          echo "Checking Netlify deployment at: $URL"
+          
+          # Retry loop to handle transient 404s during publishing
+          MAX_TRIES=12
+          SLEEP_SEC=10
+          for i in $(seq 1 $MAX_TRIES); do
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$URL" || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✓ Site is live and responding"
+              exit 0
+            fi
+            echo "Attempt $i/$MAX_TRIES: status $STATUS — retrying in $SLEEP_SEC s..."
+            sleep $SLEEP_SEC
+          done
+          echo "✗ Site returned status $STATUS after $MAX_TRIES attempts"
+          exit 1
 
   deploy-firebase:
     name: Deploy to Firebase
@@ -36,8 +66,41 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Deploy to Firebase Hosting
+        id: firebase_deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKATEQUEST_666 }}'
           projectId: skatequest-666
+
+      - name: Check Firebase deployment status
+        id: check_firebase_deploy
+        env:
+          DEPLOY_SITE_URL: ${{ env.DEPLOY_SITE_URL }}
+        run: |
+          # Prefer published URL from Firebase action output
+          PUBLISHED_URL=""
+          
+          # Firebase action may expose hosting URL in outputs
+          if [ -n "${{ steps.firebase_deploy.outputs.url || '' }}" ]; then
+            PUBLISHED_URL=${{ steps.firebase_deploy.outputs.url }}
+          fi
+          
+          # Use env override or fallback to known Firebase URL
+          URL=${PUBLISHED_URL:-${DEPLOY_SITE_URL:-https://skatequest-666.web.app}}
+          echo "Checking Firebase deployment at: $URL"
+          
+          # Retry loop to handle transient 404s during publishing
+          MAX_TRIES=12
+          SLEEP_SEC=10
+          for i in $(seq 1 $MAX_TRIES); do
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$URL" || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✓ Site is live and responding"
+              exit 0
+            fi
+            echo "Attempt $i/$MAX_TRIES: status $STATUS — retrying in $SLEEP_SEC s..."
+            sleep $SLEEP_SEC
+          done
+          echo "✗ Site returned status $STATUS after $MAX_TRIES attempts"
+          exit 1
