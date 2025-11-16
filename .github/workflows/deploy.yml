@@ -35,12 +35,9 @@ jobs:
         env:
           DEPLOY_SITE_URL: ${{ env.DEPLOY_SITE_URL }}
         run: |
-          # Prefer published URL from Netlify CLI output or fallback to known URLs
-          # Netlify CLI doesn't expose outputs directly, so we use env var or hard-coded URL
-          PUBLISHED_URL=""
-          
-          # Use env override or fallback to known Netlify URL
-          URL=${PUBLISHED_URL:-${DEPLOY_SITE_URL:-https://www.sk8quest.com}}
+          # Netlify CLI doesn't expose deployment URL as action output
+          # Use env var override or fallback to known production URL
+          URL=${DEPLOY_SITE_URL:-https://www.sk8quest.com}
           echo "Checking Netlify deployment at: $URL"
           
           # Retry loop to handle transient 404s during publishing
@@ -77,17 +74,10 @@ jobs:
         id: check_firebase_deploy
         env:
           DEPLOY_SITE_URL: ${{ env.DEPLOY_SITE_URL }}
+          FIREBASE_URL: ${{ steps.firebase_deploy.outputs.url || '' }}
         run: |
-          # Prefer published URL from Firebase action output
-          PUBLISHED_URL=""
-          
-          # Firebase action may expose hosting URL in outputs
-          if [ -n "${{ steps.firebase_deploy.outputs.url || '' }}" ]; then
-            PUBLISHED_URL=${{ steps.firebase_deploy.outputs.url }}
-          fi
-          
-          # Use env override or fallback to known Firebase URL
-          URL=${PUBLISHED_URL:-${DEPLOY_SITE_URL:-https://skatequest-666.web.app}}
+          # Use Firebase action output if available, otherwise use env var or fallback
+          URL=${FIREBASE_URL:-${DEPLOY_SITE_URL:-https://skatequest-666.web.app}}
           echo "Checking Firebase deployment at: $URL"
           
           # Retry loop to handle transient 404s during publishing
