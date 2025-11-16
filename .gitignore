@@ -43,3 +43,4 @@ firestore-debug.log
 tmp/
 temp/
 *.tmp
+actionlint
