@@ -39,6 +39,9 @@ yarn-error.log*
 firebase-debug.log
 firestore-debug.log
 
+# Vercel
+.vercel/
+
 # Temporary files
 tmp/
 temp/
