@@ -83,13 +83,11 @@ jobs:
           CHECK_SLEEP_SEC: 10
         run: |
           PUBLISHED_URL=""
-          # Try to read outputs from common deploy steps (update step ids if different)
-          if [ -n "${{ steps.netlify_publish.outputs.published_url || '' }}" ]; then
-            PUBLISHED_URL=${{ steps.netlify_publish.outputs.published_url }}
-          fi
-          if [ -z "$PUBLISHED_URL" ] && [ -n "${{ steps.firebase_deploy.outputs.hosting_url || '' }}" ]; then
+          # Try to read outputs from Firebase deploy step first
+          if [ -n "${{ steps.firebase_deploy.outputs.hosting_url || '' }}" ]; then
             PUBLISHED_URL=${{ steps.firebase_deploy.outputs.hosting_url }}
           fi
+          # Fallback to DEPLOY_SITE_URL env var if Firebase output is not available
           # Final URL preference: published output -> DEPLOY_SITE_URL env var -> provided site URL
           URL=${PUBLISHED_URL:-${DEPLOY_SITE_URL:-http://www.sk8.quest}}
           echo "Checking deployment at: $URL"
