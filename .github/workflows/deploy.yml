@@ -35,7 +35,7 @@ jobs:
     name: Deploy to Firebase
     runs-on: ubuntu-latest
     outputs:
-      hosting_url: ${{ steps.firebase_deploy.outputs.hosting_url }}
+      details_url: ${{ steps.firebase_deploy.outputs.details_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -56,17 +56,17 @@ jobs:
       - name: Check deployment status
         id: check_deploy
         env:
-          DEPLOY_SITE_URL: ${{ env.DEPLOY_SITE_URL }}
+          DEPLOY_SITE_URL: ${{ vars.DEPLOY_SITE_URL || '' }}
           CHECK_MAX_TRIES: 12
           CHECK_SLEEP_SEC: 10
         run: |
           PUBLISHED_URL=""
           # Try to read outputs from common deploy steps (update step ids if different)
           if [ -n "${{ needs.deploy-netlify.outputs.published_url || '' }}" ]; then
-            PUBLISHED_URL=${{ needs.deploy-netlify.outputs.published_url }}
+            PUBLISHED_URL="${{ needs.deploy-netlify.outputs.published_url }}"
           fi
-          if [ -z "$PUBLISHED_URL" ] && [ -n "${{ needs.deploy-firebase.outputs.hosting_url || '' }}" ]; then
-            PUBLISHED_URL=${{ needs.deploy-firebase.outputs.hosting_url }}
+          if [ -z "$PUBLISHED_URL" ] && [ -n "${{ needs.deploy-firebase.outputs.details_url || '' }}" ]; then
+            PUBLISHED_URL="${{ needs.deploy-firebase.outputs.details_url }}"
           fi
           # Final URL preference: published output -> DEPLOY_SITE_URL env var -> provided site URL
           URL=${PUBLISHED_URL:-${DEPLOY_SITE_URL:-http://www.sk8.quest}}
