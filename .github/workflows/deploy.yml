@@ -9,6 +9,8 @@ env:
   NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
   FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
   DEPLOY_SITE_URL: ${{ vars.DEPLOY_SITE_URL || '' }}
+  HEALTH_CHECK_MAX_TRIES: 12
+  HEALTH_CHECK_SLEEP_SEC: 10
 
 jobs:
   deploy-netlify:
@@ -34,6 +36,8 @@ jobs:
         id: check_netlify_deploy
         env:
           DEPLOY_SITE_URL: ${{ env.DEPLOY_SITE_URL }}
+          MAX_TRIES: ${{ env.HEALTH_CHECK_MAX_TRIES }}
+          SLEEP_SEC: ${{ env.HEALTH_CHECK_SLEEP_SEC }}
         run: |
           # Netlify CLI doesn't expose deployment URL as action output
           # Use env var override or fallback to known production URL
@@ -41,8 +45,6 @@ jobs:
           echo "Checking Netlify deployment at: $URL"
           
           # Retry loop to handle transient 404s during publishing
-          MAX_TRIES=12
-          SLEEP_SEC=10
           for i in $(seq 1 $MAX_TRIES); do
             STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$URL" || echo "000")
             if [ "$STATUS" = "200" ]; then
@@ -75,14 +77,14 @@ jobs:
         env:
           DEPLOY_SITE_URL: ${{ env.DEPLOY_SITE_URL }}
           FIREBASE_URL: ${{ steps.firebase_deploy.outputs.url || '' }}
+          MAX_TRIES: ${{ env.HEALTH_CHECK_MAX_TRIES }}
+          SLEEP_SEC: ${{ env.HEALTH_CHECK_SLEEP_SEC }}
         run: |
           # Use Firebase action output if available, otherwise use env var or fallback
           URL=${FIREBASE_URL:-${DEPLOY_SITE_URL:-https://skatequest-666.web.app}}
           echo "Checking Firebase deployment at: $URL"
           
           # Retry loop to handle transient 404s during publishing
-          MAX_TRIES=12
-          SLEEP_SEC=10
           for i in $(seq 1 $MAX_TRIES); do
             STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$URL" || echo "000")
             if [ "$STATUS" = "200" ]; then
