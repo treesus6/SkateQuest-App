@@ -61,14 +61,17 @@ jobs:
           CHECK_SLEEP_SEC: 10
         run: |
           PUBLISHED_URL=""
-          # Try to read outputs from common deploy steps (update step ids if different)
-          if [ -n "${{ needs.deploy-netlify.outputs.published_url || '' }}" ]; then
-            PUBLISHED_URL="${{ needs.deploy-netlify.outputs.published_url }}"
+          # Try to read outputs from deployment steps
+          NETLIFY_URL="${{ needs.deploy-netlify.outputs.published_url || '' }}"
+          FIREBASE_URL="${{ needs.deploy-firebase.outputs.details_url || '' }}"
+          
+          if [ -n "$NETLIFY_URL" ]; then
+            PUBLISHED_URL="$NETLIFY_URL"
+          elif [ -n "$FIREBASE_URL" ]; then
+            PUBLISHED_URL="$FIREBASE_URL"
           fi
-          if [ -z "$PUBLISHED_URL" ] && [ -n "${{ needs.deploy-firebase.outputs.details_url || '' }}" ]; then
-            PUBLISHED_URL="${{ needs.deploy-firebase.outputs.details_url }}"
-          fi
-          # Final URL preference: published output -> DEPLOY_SITE_URL env var -> provided site URL
+          
+          # Final URL preference: published output -> DEPLOY_SITE_URL repository variable -> provided site URL
           URL=${PUBLISHED_URL:-${DEPLOY_SITE_URL:-http://www.sk8.quest}}
           echo "Checking deployment at: $URL"
           STATUS="000"
