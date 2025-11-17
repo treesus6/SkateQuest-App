@@ -52,7 +52,6 @@ jobs:
       - name: Check deployment status
         id: check_deploy
         env:
-          DEPLOY_SITE_URL: ${{ env.DEPLOY_SITE_URL }}
           CHECK_MAX_TRIES: 12
           CHECK_SLEEP_SEC: 10
         run: |
