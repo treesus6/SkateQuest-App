@@ -1,6 +1,12 @@
-# SkateQuest 🛼
+# SkateQuest 🛹
+
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/treesus6/SkateQuest-App/releases/tag/v1.0.0)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-production-success.svg)](https://www.sk8quest.com)
 
 A Progressive Web App (PWA) that helps skateboarders discover, share, and track local skating spots. Join challenges, earn badges and XP, and connect with the skating community!
+
+**🚀 Live at:** [www.sk8quest.com](https://www.sk8quest.com)
 
 ## 🌟 Features
 
@@ -25,7 +31,40 @@ A Progressive Web App (PWA) that helps skateboarders discover, share, and track 
 4. **Record Tricks**: Use the camera to record and share your best tricks
 5. **Track Progress**: View your profile to see XP, badges, and spots added
 
+## 🎯 Quick Start
+
+### For Users
+1. Visit [www.sk8quest.com](https://www.sk8quest.com)
+2. Click "Add to Home Screen" on mobile to install as an app
+3. Start discovering and sharing skate spots!
+
+### For Developers
+See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for full deployment guide.
+
+```bash
+# Clone the repository
+git clone https://github.com/treesus6/SkateQuest-App.git
+cd SkateQuest-App
+
+# Start local development server
+npm run serve-local
+# or
+python3 -m http.server 8000
+
+# Visit http://localhost:8000
+```
+
+## 📚 Documentation
+
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
+- **[RELEASE_NOTES.md](RELEASE_NOTES.md)** - User-facing release information
+- **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Production deployment guide
+- **[PRODUCTION.md](PRODUCTION.md)** - Production environment setup
+- **[AUTOMATION.md](AUTOMATION.md)** - CI/CD automation guide
+
 ---
+
+## 🛠️ Development & Deployment
 
 SkateQuest — Deploying to Netlify
 
