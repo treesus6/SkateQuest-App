@@ -46,3 +46,11 @@ firestore-debug.log
 tmp/
 temp/
 *.tmp
+
+# Development and test files
+Untitled-*
+test.html
+clear-cache.html
+validate-fixes.js
+*.bak
+*.local
