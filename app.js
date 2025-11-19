@@ -43,11 +43,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const map = L.map('map', {/* options if any */}).setView([45.6387, -122.6615], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxZoom: 19,
-            errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
         }).addTo(map);
 
         // Expose map globally for error recovery
