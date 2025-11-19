@@ -7,6 +7,14 @@
 // e.g. const { db, storage, doc, getDocs } = window.firebaseInstances;
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Leaflet map
+    window.map = L.map('map').setView([39.8283, -98.5795], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(window.map);
+    console.log('✓ Map initialized');
+    
     const spotSelect = document.getElementById('spot-select');
     const trickSelect = document.getElementById('trick-select');
     const challengerInput = document.getElementById('challenger-input');
