@@ -43,7 +43,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        }).addTo(map);
+        // Use the map created in main.js
+        map = window.map;
+        
+        if (!map) {
+            throw new Error('Map not initialized in main.js');
+        }
 
         // Expose map globally for error recovery
         window.map = map;
