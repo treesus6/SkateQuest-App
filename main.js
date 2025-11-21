@@ -771,6 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const { db, getDocs, collectionGroup, doc, setDoc } = window.firebaseInstances;
             const snapshot = await getDocs(collectionGroup(db, 'proofs'));
             const feed = document.getElementById("challenge-feed");
+            if (!feed) return;
             feed.innerHTML = "<h2>Global Challenge Feed 🌍</h2>";
 
             // Clear existing challenge markers
