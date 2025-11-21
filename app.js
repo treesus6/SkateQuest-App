@@ -153,6 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (legalBtn && legalText && legalModal) {
+    }
     if (challengesBtn) {
         challengesBtn.onclick = () => {
             setActiveButton(challengesBtn);
