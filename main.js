@@ -377,9 +377,13 @@ document.addEventListener('DOMContentLoaded', function() {
         parksMarkers = [];
     }
     const parksToggle = document.getElementById('parks-toggle');
-    if (parksToggle) parksToggle.addEventListener('change', (e) => {
-        if (e.target.checked) loadParksMarkers(); else clearParksMarkers();
-    });
+    if (parksToggle) {
+        parksToggle.addEventListener('change', (e) => {
+            if (e.target.checked) loadParksMarkers(); 
+            else clearParksMarkers();
+        });
+        if (parksToggle.checked) loadParksMarkers(); // Load on init
+    }
 
     // Complete a challenge: award XP to a user
     async function callCompleteChallengeFunction(challengeId) {
@@ -388,9 +392,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const fn = window.firebaseInstances.httpsCallable(window.firebaseInstances.functions, 'completeChallenge');
             const res = await fn({ challengeId });
             return res && res.data ? res.data : null;
-        } catch (e) { console.debug('callCompleteChallengeFunction failed', e); return null; }
+        } catch (e) { 
+            console.debug('callCompleteChallengeFunction failed', e); 
+            return null; 
+        }
     }
-
+            const fn = window.firebaseInstances.httpsCallable(window.firebaseInstances.functions, 'completeChallenge');
+            const res = await fn({ challengeId });
+            return res && res.data ? res.data : null;
+        } catch (e) { 
+            console.debug('callCompleteChallengeFunction failed', e); 
+            return null; 
+        }
+    }
     async function completeChallenge(challengeId, userId) {
         try {
             if (!window.firebaseInstances) throw new Error('Firebase not initialized');
