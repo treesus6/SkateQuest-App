@@ -397,7 +397,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return null; 
         }
     }
-            const fn = window.firebaseInstances.httpsCallable(window.firebaseInstances.functions, 'completeChallenge');
             const res = await fn({ challengeId });
             return res && res.data ? res.data : null;
         } catch (e) { 

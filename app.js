@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+    if (legalBtn && legalText && legalModal) {
         legalBtn.onclick = () => {
             setActiveButton(legalBtn);
             legalText.innerHTML = `
