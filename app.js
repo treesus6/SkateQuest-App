@@ -153,6 +153,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (legalBtn && legalText && legalModal) {
+    if (challengesBtn) {
+        challengesBtn.onclick = () => {
+            setActiveButton(challengesBtn);
+            content.innerHTML = '<h2>Challenges</h2><p>View and participate in skating challenges. Feature coming soon!</p>';
+        };
+    }
+
+    if (profileBtn) {
+        profileBtn.onclick = () => {
+            setActiveButton(profileBtn);
+            content.innerHTML = '<h2>Profile</h2><p>Your skater profile and stats. Feature coming soon!</p>';
+        };
+    }
+
+
         legalBtn.onclick = () => {
             setActiveButton(legalBtn);
             legalText.innerHTML = `
