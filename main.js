@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadChallengeFeed() {
         try {
             if (!window.firebaseInstances) return;
-            const { db, getDocs, collectionGroup } = window.firebaseInstances;
+            const { db, getDocs, collectionGroup, doc, setDoc } = window.firebaseInstances;
             const snapshot = await getDocs(collectionGroup(db, 'proofs'));
             const feed = document.getElementById("challenge-feed");
             feed.innerHTML = "<h2>Global Challenge Feed 🌍</h2>";
@@ -882,7 +882,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the feed with test data if empty
     const initializeTestData = async () => {
         if (!window.firebaseInstances) return;
-        const { db, getDocs, collectionGroup } = window.firebaseInstances;
+        const { db, getDocs, collectionGroup, doc, setDoc } = window.firebaseInstances;
         const snapshot = await getDocs(collectionGroup(db, 'proofs'));
         if (snapshot.empty) {
             // Add some test challenges
