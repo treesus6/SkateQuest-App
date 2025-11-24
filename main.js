@@ -397,10 +397,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return null; 
         }
     }
-            const res = await fn({ challengeId });
-            return res && res.data ? res.data : null;
-        } catch (e) { 
-            console.debug('callCompleteChallengeFunction failed', e); 
             return null; 
         }
     }
