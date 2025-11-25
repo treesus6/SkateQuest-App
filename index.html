@@ -38,6 +38,8 @@ Q<!DOCTYPE html>
         <!-- Stylesheets -->
         <link rel="stylesheet" href="style.css" />
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     </head>
     <body>
         <header>
@@ -182,6 +184,8 @@ Q<!DOCTYPE html>
 
     <!-- Leaflet JS (no SRI) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet MarkerCluster plugin -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <!-- Leaflet heatmap plugin -->
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
@@ -222,11 +226,14 @@ Q<!DOCTYPE html>
     <script src="health-ui.js"></script>
 
         <!-- App JS with cache-busting -->
-    <script src="app.js?v=12" defer></script>
     <script src="main.js?v=12" defer></script>
+    <script src="app.js?v=12" defer></script>
     <script src="pwa.js?v=12" defer></script>
-    <script src="parks.js?v=1" defer></script> <!-- added --> src="parks.js?v=1" defer></script> <!-- added -->
-    </body>ody>
+    <script src="parks.js?v=1" defer></script>
+    
+    <!-- Portal Dimension Integration -->
+    <script src="portal-dimension.js?v=1" defer></script>
+    </body>
 </html></html>
 
 

@@ -6,7 +6,7 @@
 // ...existing code will reference firebase via window.firebaseInstances
 // e.g. const { db, storage, doc, getDocs } = window.firebaseInstances;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Initialize Leaflet map
     window.map = L.map('map').setView([39.8283, -98.5795], 4);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -394,9 +394,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return res && res.data ? res.data : null;
         } catch (e) { 
             console.debug('callCompleteChallengeFunction failed', e); 
-            return null; 
-        }
-    }
             return null; 
         }
     }

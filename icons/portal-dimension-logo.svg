@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#FF6E40"/>
+      <stop offset="100%" stop-color="#FF8A65"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="32" fill="url(#g)"/>
+  <g transform="translate(24 24) scale(0.75)">
+    <circle cx="64" cy="64" r="56" fill="#FFF9F6"/>
+    <path d="M64 32c17.673 0 32 14.327 32 32s-14.327 32-32 32-32-14.327-32-32S46.327 32 64 32z" fill="#FF6E40"/>
+    <text x="64" y="84" text-anchor="middle" font-size="40" font-family="Arial, Helvetica, sans-serif" fill="#fff" font-weight="bold">PD</text>
+  </g>
+</svg>

@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Fix map rendering on resize
         window.addEventListener('resize', () => {
-            if (map) {
+            if (map && typeof map.invalidateSize === 'function') {
                 setTimeout(() => map.invalidateSize(), 100);
             }
         });
@@ -68,18 +68,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // When user clicks on the map while in add mode, show the add form at that coord
-    map.on('click', (e) => {
+    if (map && typeof map.on === 'function') {
+        map.on('click', (e) => {
         if (!mapClickToAdd) return;
         const { lat, lng } = e.latlng;
         // add or move temporary marker
         if (!tempAddMarker) tempAddMarker = L.marker([lat, lng]).addTo(map);
         else tempAddMarker.setLatLng([lat, lng]);
         showAddSpotForm(lat.toFixed(6), lng.toFixed(6));
-    });
+        });
+    }
 
     let skateSpots = [], userProfile = {}, markers = [];
     let skateShops = [], shopMarkers = [];
     let showShops = false;
+    
+    // Initialize marker cluster groups for better performance
+    let markerClusterGroup = null;
+    let shopMarkerClusterGroup = null;
+    
+    // Initialize clusters after map is ready
+    if (typeof L !== 'undefined' && typeof L.markerClusterGroup === 'function') {
+        markerClusterGroup = L.markerClusterGroup({
+            maxClusterRadius: 60,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true
+        });
+        shopMarkerClusterGroup = L.markerClusterGroup({
+            maxClusterRadius: 50,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true,
+            iconCreateFunction: function(cluster) {
+                return L.divIcon({ 
+                    html: '<div style="background:#FF5722;color:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:bold;">' + cluster.getChildCount() + '</div>',
+                    className: 'shop-cluster',
+                    iconSize: L.point(40, 40)
+                });
+            }
+        });
+        console.log('✓ Marker cluster groups initialized');
+    } else {
+        console.warn('MarkerCluster not available, falling back to standard markers');
+    }
     let currentUserId = null, userLocationMarker = null, currentUserPosition = null;
     let mediaRecorder, recordedChunks = [], recordedVideoUrl = null, videoStream = null;
     let mapClickToAdd = false, tempAddMarker = null;
@@ -260,11 +292,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderMarkers() {
-        markers.forEach(m => map.removeLayer(m));
+        // Clear existing markers
+        if (markerClusterGroup) {
+            markerClusterGroup.clearLayers();
+            if (map.hasLayer(markerClusterGroup)) {
+                map.removeLayer(markerClusterGroup);
+            }
+        } else {
+            markers.forEach(m => map.removeLayer(m));
+        }
         markers = [];
+        
         skateSpots.forEach(spot => {
             if (spot.coords && spot.coords.latitude && spot.coords.longitude) {
-                const marker = L.marker([spot.coords.latitude, spot.coords.longitude]).addTo(map);
+                const marker = L.marker([spot.coords.latitude, spot.coords.longitude]);
         
                 let popupContent = `
                     <strong>${spot.name}</strong><br/>
@@ -286,6 +327,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         
                 marker.bindPopup(popupContent);
                 markers.push(marker);
+                
+                // Add to cluster group or map
+                if (markerClusterGroup) {
+                    markerClusterGroup.addLayer(marker);
+                } else {
+                    marker.addTo(map);
+                }
         
                 marker.on('popupopen', () => {
                     // Add the spot ID to the popup's HTML element
@@ -299,6 +347,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
         });
+        
+        // Add cluster group to map
+        if (markerClusterGroup && markers.length > 0) {
+            map.addLayer(markerClusterGroup);
+            console.log(`✓ Rendered ${markers.length} skate spot markers with clustering`);
+        } else if (markers.length > 0) {
+            console.log(`✓ Rendered ${markers.length} skate spot markers`);
+        }
     }
 
     // Helper function to escape HTML to prevent XSS
@@ -312,7 +368,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Render skate shop markers on the map
     function renderShopMarkers() {
         // Remove existing shop markers
-        shopMarkers.forEach(m => map.removeLayer(m));
+        if (shopMarkerClusterGroup) {
+            shopMarkerClusterGroup.clearLayers();
+            if (map.hasLayer(shopMarkerClusterGroup)) {
+                map.removeLayer(shopMarkerClusterGroup);
+            }
+        } else {
+            shopMarkers.forEach(m => map.removeLayer(m));
+        }
         shopMarkers = [];
         
         // Only render if shops toggle is enabled
@@ -328,7 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     iconAnchor: [15, 15]
                 });
                 
-                const marker = L.marker([shop.coords.latitude, shop.coords.longitude], { icon: shopIcon }).addTo(map);
+                const marker = L.marker([shop.coords.latitude, shop.coords.longitude], { icon: shopIcon });
         
                 let popupContent = `
                     <div style="min-width:200px;">
@@ -343,8 +406,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         
                 marker.bindPopup(popupContent);
                 shopMarkers.push(marker);
+                
+                // Add to cluster group or map
+                if (shopMarkerClusterGroup) {
+                    shopMarkerClusterGroup.addLayer(marker);
+                } else {
+                    marker.addTo(map);
+                }
             }
         });
+        
+        // Add shop cluster group to map
+        if (shopMarkerClusterGroup && shopMarkers.length > 0) {
+            map.addLayer(shopMarkerClusterGroup);
+            console.log(`✓ Rendered ${shopMarkers.length} shop markers with clustering`);
+        } else if (shopMarkers.length > 0) {
+            console.log(`✓ Rendered ${shopMarkers.length} shop markers`);
+        }
     }
 
     // New function to add a challenge to a spot
