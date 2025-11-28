@@ -7,8 +7,8 @@
     const PortalDimensionSpot = {
         config: {
             companyName: 'Portal Dimension',
-            website: 'https://portaldimension.com', // Update with actual URL
-            logoUrl: '/icons/portal-dimension-logo.svg', // Replace with Portal Dimension logo or use this placeholder
+            website: 'https://portaldimension.com',
+            logoUrl: '/icons/portal-dimension-logo.png',
             location: {
                 name: 'Newport Skatepark',
                 latitude: 44.6368,  // Newport, Oregon
