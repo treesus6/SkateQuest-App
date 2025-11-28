@@ -40,11 +40,12 @@ service cloud.firestore {
       allow delete: if request.auth != null;
     }
     
-    // Portal Dimension click tracking - writes should come from Cloud Functions (server-side) or authenticated users
+    // Portal Dimension click tracking - writes from authenticated users
     match /portalDimensionClicks/{clickId} {
       allow read: if true;  // Anyone can read stats for analytics
-      // Deny direct client writes; logs should be written server-side from Cloud Functions
-      allow create, update, delete: if false;
+      // Allow authenticated users to create click logs (Cloud Function provides rate limiting)
+      allow create: if request.auth != null;
+      allow update, delete: if false;  // Prevent modification/deletion of existing logs
     }
   }
 }
