@@ -24,7 +24,7 @@ We're excited to announce the official production release of SkateQuest - your g
 
 ## 🚀 Get Started
 
-Visit **https://www.sk8quest.com** and start exploring!
+Visit **https://sk8.quest** and start exploring!
 
 ### How to Use
 1. **Discover** - Browse the map to find skate spots near you
@@ -36,13 +36,13 @@ Visit **https://www.sk8quest.com** and start exploring!
 ## 📱 Installation
 
 ### iOS
-1. Open Safari and navigate to https://www.sk8quest.com
+1. Open Safari and navigate to https://sk8.quest
 2. Tap the Share button
 3. Select "Add to Home Screen"
 4. Enjoy the app experience!
 
 ### Android
-1. Open Chrome and navigate to https://www.sk8quest.com
+1. Open Chrome and navigate to https://sk8.quest
 2. Tap the menu (three dots)
 3. Select "Install app" or "Add to Home screen"
 4. Launch from your app drawer!
@@ -57,7 +57,7 @@ Visit **https://www.sk8quest.com** and start exploring!
 ## 🌐 Production Deployment
 
 ### Live Sites
-- **Primary**: https://www.sk8quest.com
+- **Primary**: https://sk8.quest
 - **Netlify**: https://skatequest.netlify.app
 
 ### Infrastructure

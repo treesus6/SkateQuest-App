@@ -188,7 +188,7 @@ firebase deploy --only firestore:rules,storage:rules --project skatequest-666
 
 ### Netlify
 - **Site**: skatequest.netlify.app
-- **Custom Domain**: www.sk8quest.com (configured via DNS)
+- **Custom Domain**: sk8.quest (configured via DNS)
 - **Functions**: `.netlify/functions/` directory
 
 ### GitHub Actions Secrets
@@ -230,5 +230,5 @@ Additional documentation files:
 ## Contact and Support
 
 - **Repository**: https://github.com/treesus6/SkateQuest-App
-- **Live Site**: https://www.sk8quest.com
+- **Live Site**: https://sk8.quest
 - **Firebase Console**: https://console.firebase.google.com/project/skatequest-666

@@ -7,7 +7,7 @@
 
 **SkateQuest** is a rapidly growing Progressive Web App (PWA) that connects skateboarders worldwide through spot discovery, challenges, and community engagement. We're seeking brand partnerships to enhance our platform while providing sponsors with direct access to an engaged, passionate skateboarding audience.
 
-**Live Platform:** [www.sk8quest.com](https://www.sk8quest.com)
+**Live Platform:** [sk8.quest](https://sk8.quest)
 
 ---
 
@@ -163,7 +163,7 @@ Interested in partnering with SkateQuest? Let's talk!
 
 **Contact:**
 - **Email:** [your-email@skatequest.com]
-- **Website:** [www.sk8quest.com](https://www.sk8quest.com)
+- **Website:** [sk8.quest](https://sk8.quest)
 - **Social Media:** [@skatequest on Instagram/Twitter]
 
 We'd love to schedule a call to discuss how we can create a mutually beneficial partnership that brings value to both your brand and our skateboarding community.

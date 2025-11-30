@@ -19,15 +19,16 @@ Skateboarding isn't just a sport - it's a way of life that teaches invaluable le
 
 ### Protecting the Heart of Skateboarding ❤️
 
-**We're here to support LOCAL SKATE SHOPS** - the true backbone of skateboarding culture.
+**We're here to support the ENTIRE skateboarding industry** - shops, brands, wheel companies, clothing lines, filmers, artists - everything that keeps the CULTURE alive.
 
-Unlike mega-corporations like Zumiez that commodify skate culture, **local shops ARE skateboarding**:
-- They mentor the next generation
-- They sponsor local kids and teams
-- They keep skateboarding authentic and community-driven
-- They're run by skaters who LIVE the culture
+Unlike mega-corporations like Zumiez that commodify skate culture, **the core skateboarding industry IS skateboarding**:
+- Local skate shops mentor the next generation
+- Independent brands keep skateboarding authentic
+- Small wheel and truck companies are owned by real skaters
+- Clothing brands that actually support skaters and teams
+- They're ALL run by people who LIVE the culture
 
-**SkateQuest directly connects skaters with their local shops**, helping small businesses thrive against corporate chains. When you support local shops through our platform, you're keeping skateboarding's soul alive.
+**SkateQuest directly connects skaters with authentic skateboarding businesses** - from your local shop to independent wheel brands to skater-owned clothing companies. When you support them through our platform, you're keeping skateboarding's CULTURE alive.
 
 SkateQuest is more than an app - it's a movement to make skateboarding accessible, connected, and impactful while preserving what makes skateboarding special.
 
@@ -183,14 +184,14 @@ Every quarter, we publish:
 - Apparel brands (Vans, Nike SB, Adidas)
 - Action sports media (Thrasher, Transworld, The Berrics)
 
-**Interested in partnering?** Email: partnerships@sk8quest.com
+**Interested in partnering?** Email: partnerships@sk8.quest
 
 ---
 
 ## Media & Press
 
 ### Press Inquiries:
-- **Email**: press@sk8quest.com
+- **Email**: press@sk8.quest
 - **Press Kit**: [Download Media Kit](PRESS_KIT.md)
 - **High-Res Assets**: Available upon request
 
@@ -217,7 +218,7 @@ Every quarter, we publish:
 - Charity Program Director
 - Community Managers (various cities)
 
-**Interested in joining the team?** Email: careers@sk8quest.com
+**Interested in joining the team?** Email: careers@sk8.quest
 
 ---
 
@@ -252,16 +253,16 @@ Every quarter, we publish:
 ## Contact Us
 
 ### General Inquiries
-- **Website**: https://www.sk8quest.com
-- **Email**: hello@sk8quest.com
-- **Support**: support@sk8quest.com
+- **Website**: https://sk8.quest
+- **Email**: hello@sk8.quest
+- **Support**: support@sk8.quest
 
 ### Business & Partnerships
-- **Email**: partnerships@sk8quest.com
-- **Sponsorships**: sponsors@sk8quest.com
+- **Email**: partnerships@sk8.quest
+- **Sponsorships**: sponsors@sk8.quest
 
 ### Press & Media
-- **Email**: press@sk8quest.com
+- **Email**: press@sk8.quest
 
 ### Social Media
 - **Instagram**: [@skatequest](https://instagram.com/skatequest) *(coming soon)*
@@ -319,7 +320,7 @@ A: Yes. We use bank-level security (Supabase), Row Level Security policies, and 
 A: Yes! SkateQuest works globally.
 
 **Q: How do I delete my account?**
-A: Email support@sk8quest.com and we'll delete your data within 30 days.
+A: Email support@sk8.quest and we'll delete your data within 30 days.
 
 ---
 

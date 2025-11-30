@@ -7,7 +7,7 @@
 ### Domain Configuration
 
 **Current Setup:**
-- Primary: https://www.sk8quest.com
+- Primary: https://sk8.quest
 - Short Link: https://sk8.quest (redirects to primary)
 - Status: Active and paid for
 
@@ -16,8 +16,8 @@
 ```
 Type    Name    Value                           TTL
 A       @       [Your hosting IP]              Auto
-CNAME   www     sk8quest.com                   Auto
-CNAME   sk8     sk8quest.com                   Auto
+CNAME   www     sk8.quest                   Auto
+CNAME   sk8     sk8.quest                   Auto
 ```
 
 **For Netlify:**
@@ -27,7 +27,7 @@ CNAME   sk8     sk8quest.com                   Auto
 3. Configure redirects in netlify.toml:
    [[redirects]]
      from = "https://sk8.quest/*"
-     to = "https://www.sk8quest.com/:splat"
+     to = "https://sk8.quest/:splat"
      status = 301
      force = true
 ```
@@ -60,9 +60,9 @@ firebase hosting:channel:deploy production
 ### Redirect Strategy
 
 **All domains should redirect to primary:**
-- sk8.quest → www.sk8quest.com (✅)
-- skatequest.com → www.sk8quest.com
-- www.skatequest.com → www.sk8quest.com
+- sk8.quest → sk8.quest (✅)
+- skatequest.com → sk8.quest
+- www.skatequest.com → sk8.quest
 
 ### Use Cases for sk8.quest
 
@@ -95,9 +95,9 @@ https://sk8.quest/charity
 ### URL Structure
 
 **Primary Site:**
-- Homepage: https://www.sk8quest.com
-- About: https://www.sk8quest.com/about (future)
-- Charity: https://www.sk8quest.com/charity (future separate page)
+- Homepage: https://sk8.quest
+- About: https://sk8.quest/about (future)
+- Charity: https://sk8.quest/charity (future separate page)
 
 **Short Links (sk8.quest):**
 - QR Codes: https://sk8.quest/qr/{code}
@@ -115,11 +115,11 @@ https://sk8.quest/charity
 ### Email Setup (Future)
 
 **Professional Email Addresses:**
-- hello@sk8quest.com
-- support@sk8quest.com
-- partnerships@sk8quest.com
-- press@sk8quest.com
-- invest@sk8quest.com
+- hello@sk8.quest
+- support@sk8.quest
+- partnerships@sk8.quest
+- press@sk8.quest
+- invest@sk8.quest
 
 **Or using short domain:**
 - hello@sk8.quest
@@ -141,7 +141,7 @@ https://sk8.quest/charity
 **Examples:**
 - ✅ "Visit sk8.quest to join the movement"
 - ✅ "Download SkateQuest at sk8.quest"
-- ❌ "Visit sk8quest.com" (use primary www.sk8quest.com or short sk8.quest)
+- ❌ "Visit sk8.quest" (use primary sk8.quest or short sk8.quest)
 
 ---
 
@@ -172,7 +172,7 @@ https://sk8.quest/charity
   gtag('js', new Date());
   gtag('config', 'G-XXXXXXXXXX', {
     'page_location': window.location.href,
-    'cookie_domain': 'sk8quest.com'
+    'cookie_domain': 'sk8.quest'
   });
 </script>
 ```
@@ -202,10 +202,10 @@ https://sk8.quest/charity
 
 ## SEO Configuration
 
-**Primary Domain (www.sk8quest.com):**
+**Primary Domain (sk8.quest):**
 ```html
-<link rel="canonical" href="https://www.sk8quest.com/" />
-<meta property="og:url" content="https://www.sk8quest.com/" />
+<link rel="canonical" href="https://sk8.quest/" />
+<meta property="og:url" content="https://sk8.quest/" />
 ```
 
 **All alternate domains redirect with 301:**

@@ -41,7 +41,7 @@ This is the first official production release of SkateQuest - a Progressive Web 
 - Firebase rules deployment included
 
 ### Production URLs
-- **Primary**: https://www.sk8quest.com
+- **Primary**: https://sk8.quest
 - **Netlify**: https://skatequest.netlify.app
 
 ### Notes

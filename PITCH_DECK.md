@@ -43,14 +43,18 @@
 
 ### Competition:
 
-| Competitor | Users | Weakness | Our Advantage |
+| Competitor | Users | Features | Our TRUE Advantage |
 |-----------|-------|----------|---------------|
-| The Shred App | 50K | No gamification | XP system, crews, achievements |
-| Skate Spots | 20K | Just a map | Full social features + charity |
-| CityLegends | 15K | No community features | Events, crews, real-time sessions |
-| **SkateQuest** | **0→100K** | **New** | **Only app combining all features + charity** |
+| **CityLegends** | 15K | Great app with social, challenges, map | **We add: Charity mission, local biz support, life lessons brand** |
+| The Shred App | 50K | Trick tracking | Less community focus |
+| Skate Spots | 20K | Just a map | No social or charity |
+| Instagram | Millions | General social | Not skate-specific, no charity |
+| **SkateQuest** | **0→100K** | **All features + charity + culture mission** | **Only app with social IMPACT and supporting core skate culture** |
 
-**Competitive Moat:** First-mover advantage in charity integration + comprehensive feature set
+**Our REAL Competitive Moat:**
+- First charity-integrated skateboarding platform
+- Mission-driven brand (life lessons, supporting authentic skate industry)
+- Not just features - we're building a MOVEMENT
 
 ---
 
@@ -269,10 +273,10 @@
 
 ## Contact
 
-**Website:** https://www.sk8quest.com
-**Email:** partnerships@sk8quest.com
+**Website:** https://sk8.quest
+**Email:** partnerships@sk8.quest
 **Pitch Deck:** [Link to slide presentation]
-**Demo:** https://www.sk8quest.com (live working app)
+**Demo:** https://sk8.quest (live working app)
 
 **Let's build the future of skateboarding together.** 🛹
 
