@@ -119,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const content = document.getElementById('content');
     const discoverBtn = document.getElementById('discoverBtn');
     const addSpotBtn = document.getElementById('addSpotBtn');
+    const crewsBtn = document.getElementById('crewsBtn');
     const shopsBtn = document.getElementById('shopsBtn');
     const profileBtn = document.getElementById('profileBtn');
     const centerMapBtn = document.getElementById('centerMapBtn');
@@ -150,11 +151,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     function setActiveButton(activeBtn) {
         if (!activeBtn) return;
-        [discoverBtn, addSpotBtn, shopsBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
+        [discoverBtn, addSpotBtn, crewsBtn, shopsBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
         activeBtn.classList.add('active');
     }
 
-    console.log('Button check:', {discoverBtn, addSpotBtn, shopsBtn, profileBtn, legalBtn});
+    console.log('Button check:', {discoverBtn, addSpotBtn, crewsBtn, shopsBtn, profileBtn, legalBtn});
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -611,6 +612,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             mapClickToAdd = true;
             setActiveButton(addSpotBtn);
             content.innerHTML = '<p>Click anywhere on the map to add a new spot. Click the "Add Spot" button again to cancel.</p>';
+        };
+    }
+
+    // Crews button handler
+    if (crewsBtn) {
+        crewsBtn.onclick = () => {
+            setActiveButton(crewsBtn);
+            renderCrewsPanel();
         };
     }
 
@@ -1185,5 +1194,357 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error("Error updating trick status:", error);
             showModal("Failed to update trick status. Please try again.");
         }
+    }
+
+    // ===== CREW/TEAM SYSTEM =====
+
+    let userCrew = null;
+    let allCrews = [];
+
+    // Render crews panel
+    function renderCrewsPanel() {
+        content.innerHTML = `
+            <div style="padding:1.5rem;">
+                <h2 style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🤝 Skate Crews</h2>
+                <p>Join or create a crew to compete together!</p>
+
+                ${userCrew ? `
+                    <div id="my-crew-section" style="margin:1.5rem 0;padding:1.5rem;background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);border-radius:12px;color:white;">
+                        <h3 style="margin-top:0;">👥 My Crew</h3>
+                        <div id="my-crew-details">Loading...</div>
+                        <button id="leave-crew-btn" style="margin-top:1rem;padding:0.6rem 1rem;background:rgba(255,255,255,0.2);color:white;border:1px solid white;border-radius:8px;cursor:pointer;">
+                            Leave Crew
+                        </button>
+                    </div>
+                ` : `
+                    <div style="margin:1.5rem 0;padding:1.5rem;background:#f0f0f0;border-radius:12px;">
+                        <h3>🆕 Create a Crew</h3>
+                        <form id="create-crew-form" style="display:flex;flex-direction:column;gap:0.8rem;margin-top:1rem;">
+                            <label>
+                                Crew Name *
+                                <input type="text" id="crew-name" required placeholder="e.g., Street Kings" maxlength="30" />
+                            </label>
+                            <label>
+                                Crew Tag (2-5 letters) *
+                                <input type="text" id="crew-tag" required placeholder="e.g., SK8" maxlength="5" style="text-transform:uppercase;" />
+                            </label>
+                            <label>
+                                Crew Bio
+                                <textarea id="crew-bio" placeholder="Describe your crew..." rows="3" maxlength="200"></textarea>
+                            </label>
+                            <button type="submit" style="padding:0.8rem;background:#667eea;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">
+                                Create Crew
+                            </button>
+                        </form>
+                    </div>
+                `}
+
+                <hr style="margin:2rem 0;" />
+
+                <h3>🌐 All Crews</h3>
+                <div id="crews-list"></div>
+
+                <hr style="margin:2rem 0;" />
+
+                <h3>🏆 Crew Leaderboard</h3>
+                <div id="crew-leaderboard"></div>
+            </div>
+        `;
+
+        // Load crews data
+        loadCrews();
+
+        // Setup create crew form if user doesn't have a crew
+        if (!userCrew) {
+            const createCrewForm = document.getElementById('create-crew-form');
+            if (createCrewForm) {
+                createCrewForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    await createCrew();
+                };
+                // Force uppercase for tag
+                const tagInput = document.getElementById('crew-tag');
+                if (tagInput) {
+                    tagInput.oninput = (e) => {
+                        e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    };
+                }
+            }
+        } else {
+            // Setup leave crew button
+            const leaveCrewBtn = document.getElementById('leave-crew-btn');
+            if (leaveCrewBtn) {
+                leaveCrewBtn.onclick = () => leaveCrew();
+            }
+            // Load user's crew details
+            loadMyCrew();
+        }
+    }
+
+    // Create a new crew
+    async function createCrew() {
+        const name = document.getElementById('crew-name').value.trim();
+        const tag = document.getElementById('crew-tag').value.trim().toUpperCase();
+        const bio = document.getElementById('crew-bio').value.trim();
+
+        if (!name || !tag) {
+            showModal("Please provide crew name and tag.");
+            return;
+        }
+
+        if (tag.length < 2 || tag.length > 5) {
+            showModal("Crew tag must be 2-5 characters.");
+            return;
+        }
+
+        try {
+            // Check if tag already exists
+            const tagQuery = query(collection(db, `/artifacts/${appId}/crews`), where("tag", "==", tag));
+            const tagSnapshot = await getDocs(tagQuery);
+
+            if (!tagSnapshot.empty) {
+                showModal("This crew tag is already taken. Choose another one.");
+                return;
+            }
+
+            const crewData = {
+                name,
+                tag,
+                bio: bio || '',
+                founderId: currentUserId,
+                founderName: userProfile.username || 'Anonymous',
+                members: [currentUserId],
+                memberNames: [userProfile.username || 'Anonymous'],
+                totalXP: userProfile.xp || 0,
+                challengesCompleted: 0,
+                spotsAdded: userProfile.spotsAdded || 0,
+                createdAt: serverTimestamp()
+            };
+
+            const crewRef = await addDoc(collection(db, `/artifacts/${appId}/crews`), crewData);
+
+            // Update user profile with crew ID
+            await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), {
+                crewId: crewRef.id,
+                crewTag: tag
+            });
+
+            userProfile.crewId = crewRef.id;
+            userProfile.crewTag = tag;
+            userCrew = { id: crewRef.id, ...crewData };
+
+            showModal(`Crew "${name}" created successfully!`);
+            renderCrewsPanel();
+        } catch (error) {
+            console.error("Error creating crew:", error);
+            showModal("Failed to create crew. Please try again.");
+        }
+    }
+
+    // Join an existing crew
+    async function joinCrew(crewId, crewTag) {
+        if (userCrew) {
+            showModal("You must leave your current crew before joining another.");
+            return;
+        }
+
+        try {
+            const crewRef = doc(db, `/artifacts/${appId}/crews/${crewId}`);
+
+            // Add user to crew members
+            await updateDoc(crewRef, {
+                members: [...(userCrew?.members || []), currentUserId],
+                memberNames: [...(userCrew?.memberNames || []), userProfile.username || 'Anonymous'],
+                totalXP: increment(userProfile.xp || 0),
+                spotsAdded: increment(userProfile.spotsAdded || 0)
+            });
+
+            // Update user profile
+            await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), {
+                crewId: crewId,
+                crewTag: crewTag
+            });
+
+            userProfile.crewId = crewId;
+            userProfile.crewTag = crewTag;
+
+            showModal(`You've joined the crew!`);
+            renderCrewsPanel();
+        } catch (error) {
+            console.error("Error joining crew:", error);
+            showModal("Failed to join crew. Please try again.");
+        }
+    }
+
+    // Leave current crew
+    async function leaveCrew() {
+        if (!userCrew) return;
+
+        const confirmed = confirm(`Are you sure you want to leave "${userCrew.name}"?`);
+        if (!confirmed) return;
+
+        try {
+            const crewRef = doc(db, `/artifacts/${appId}/crews/${userCrew.id}`);
+
+            // Remove user from crew
+            const newMembers = userCrew.members.filter(id => id !== currentUserId);
+            const newMemberNames = userCrew.memberNames.filter(name => name !== (userProfile.username || 'Anonymous'));
+
+            if (newMembers.length === 0) {
+                // Delete crew if no members left
+                await deleteDoc(crewRef);
+                showModal("Crew dissolved (no members remaining).");
+            } else {
+                await updateDoc(crewRef, {
+                    members: newMembers,
+                    memberNames: newMemberNames,
+                    totalXP: increment(-(userProfile.xp || 0)),
+                    spotsAdded: increment(-(userProfile.spotsAdded || 0))
+                });
+                showModal("You've left the crew.");
+            }
+
+            // Update user profile
+            await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), {
+                crewId: null,
+                crewTag: null
+            });
+
+            userProfile.crewId = null;
+            userProfile.crewTag = null;
+            userCrew = null;
+
+            renderCrewsPanel();
+        } catch (error) {
+            console.error("Error leaving crew:", error);
+            showModal("Failed to leave crew. Please try again.");
+        }
+    }
+
+    // Load all crews
+    async function loadCrews() {
+        try {
+            const crewsSnapshot = await getDocs(collection(db, `/artifacts/${appId}/crews`));
+            allCrews = [];
+            crewsSnapshot.forEach(doc => {
+                allCrews.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Check if user has a crew
+            if (userProfile.crewId) {
+                userCrew = allCrews.find(c => c.id === userProfile.crewId);
+            }
+
+            renderCrewsList();
+            renderCrewLeaderboard();
+        } catch (error) {
+            console.error("Error loading crews:", error);
+        }
+    }
+
+    // Load user's crew details
+    async function loadMyCrew() {
+        if (!userCrew) return;
+
+        const myCrewDetails = document.getElementById('my-crew-details');
+        if (!myCrewDetails) return;
+
+        myCrewDetails.innerHTML = `
+            <h4 style="margin:0.5rem 0;font-size:1.5rem;">[${userCrew.tag}] ${userCrew.name}</h4>
+            ${userCrew.bio ? `<p style="margin:0.5rem 0;opacity:0.9;">${escapeHtml(userCrew.bio)}</p>` : ''}
+            <div style="margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1rem;">
+                <div style="background:rgba(255,255,255,0.2);padding:0.8rem;border-radius:8px;text-align:center;">
+                    <div style="font-size:1.5rem;font-weight:bold;">${userCrew.members?.length || 0}</div>
+                    <div style="font-size:0.8rem;">Members</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.2);padding:0.8rem;border-radius:8px;text-align:center;">
+                    <div style="font-size:1.5rem;font-weight:bold;">${userCrew.totalXP || 0}</div>
+                    <div style="font-size:0.8rem;">Total XP</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.2);padding:0.8rem;border-radius:8px;text-align:center;">
+                    <div style="font-size:1.5rem;font-weight:bold;">${userCrew.spotsAdded || 0}</div>
+                    <div style="font-size:0.8rem;">Spots</div>
+                </div>
+            </div>
+            <div style="margin-top:1rem;">
+                <strong>Members:</strong><br/>
+                ${userCrew.memberNames?.join(', ') || 'None'}
+            </div>
+        `;
+    }
+
+    // Render crews list
+    function renderCrewsList() {
+        const crewsList = document.getElementById('crews-list');
+        if (!crewsList) return;
+
+        if (allCrews.length === 0) {
+            crewsList.innerHTML = '<p style="color:#666;">No crews yet. Be the first to create one!</p>';
+            return;
+        }
+
+        crewsList.innerHTML = allCrews.map(crew => `
+            <div style="padding:1rem;margin-bottom:1rem;border:2px solid #667eea;border-radius:10px;background:white;">
+                <h4 style="margin:0 0 0.5rem 0;color:#667eea;"><span style="background:#667eea;color:white;padding:0.2rem 0.5rem;border-radius:4px;margin-right:0.5rem;">${escapeHtml(crew.tag)}</span>${escapeHtml(crew.name)}</h4>
+                ${crew.bio ? `<p style="margin:0.5rem 0;color:#666;font-size:0.9rem;">${escapeHtml(crew.bio)}</p>` : ''}
+                <div style="margin-top:0.8rem;display:flex;gap:1rem;flex-wrap:wrap;font-size:0.9rem;color:#555;">
+                    <span>👥 ${crew.members?.length || 0} members</span>
+                    <span>⭐ ${crew.totalXP || 0} XP</span>
+                    <span>📍 ${crew.spotsAdded || 0} spots</span>
+                </div>
+                ${!userCrew && crew.id !== userProfile.crewId ? `
+                    <button class="join-crew-btn" data-crew-id="${crew.id}" data-crew-tag="${crew.tag}"
+                            style="margin-top:0.8rem;padding:0.5rem 1rem;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">
+                        Join Crew
+                    </button>
+                ` : ''}
+                ${crew.id === userProfile.crewId ? '<span style="color:#4CAF50;font-weight:bold;">✓ Your Crew</span>' : ''}
+            </div>
+        `).join('');
+
+        // Add event listeners to join buttons
+        document.querySelectorAll('.join-crew-btn').forEach(btn => {
+            btn.onclick = () => {
+                const crewId = btn.dataset.crewId;
+                const crewTag = btn.dataset.crewTag;
+                joinCrew(crewId, crewTag);
+            };
+        });
+    }
+
+    // Render crew leaderboard
+    function renderCrewLeaderboard() {
+        const leaderboard = document.getElementById('crew-leaderboard');
+        if (!leaderboard) return;
+
+        const sortedCrews = [...allCrews].sort((a, b) => (b.totalXP || 0) - (a.totalXP || 0));
+
+        if (sortedCrews.length === 0) {
+            leaderboard.innerHTML = '<p style="color:#666;">No crews to display yet.</p>';
+            return;
+        }
+
+        const medals = ['🥇', '🥈', '🥉'];
+
+        leaderboard.innerHTML = `
+            <div style="background:#f5f5f5;border-radius:10px;padding:1rem;">
+                ${sortedCrews.slice(0, 10).map((crew, index) => `
+                    <div style="padding:0.8rem;margin-bottom:0.5rem;background:white;border-radius:8px;display:flex;justify-content:space-between;align-items:center;${crew.id === userProfile.crewId ? 'border:2px solid #4CAF50;' : ''}">
+                        <div style="display:flex;align-items:center;gap:0.8rem;">
+                            <span style="font-size:1.5rem;min-width:30px;">${medals[index] || `#${index + 1}`}</span>
+                            <div>
+                                <strong>[${escapeHtml(crew.tag)}] ${escapeHtml(crew.name)}</strong>
+                                <div style="font-size:0.8rem;color:#666;">
+                                    ${crew.members?.length || 0} members
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:1.2rem;font-weight:bold;color:#667eea;">${crew.totalXP || 0} XP</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
     }
 });
