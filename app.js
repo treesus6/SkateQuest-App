@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const discoverBtn = document.getElementById('discoverBtn');
     const addSpotBtn = document.getElementById('addSpotBtn');
     const crewsBtn = document.getElementById('crewsBtn');
+    const eventsBtn = document.getElementById('eventsBtn');
     const shopsBtn = document.getElementById('shopsBtn');
     const profileBtn = document.getElementById('profileBtn');
     const centerMapBtn = document.getElementById('centerMapBtn');
@@ -151,11 +152,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     function setActiveButton(activeBtn) {
         if (!activeBtn) return;
-        [discoverBtn, addSpotBtn, crewsBtn, shopsBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
+        [discoverBtn, addSpotBtn, crewsBtn, eventsBtn, shopsBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
         activeBtn.classList.add('active');
     }
 
-    console.log('Button check:', {discoverBtn, addSpotBtn, crewsBtn, shopsBtn, profileBtn, legalBtn});
+    console.log('Button check:', {discoverBtn, addSpotBtn, crewsBtn, eventsBtn, shopsBtn, profileBtn, legalBtn});
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -620,6 +621,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         crewsBtn.onclick = () => {
             setActiveButton(crewsBtn);
             renderCrewsPanel();
+        };
+    }
+
+    // Events button handler
+    if (eventsBtn) {
+        eventsBtn.onclick = () => {
+            setActiveButton(eventsBtn);
+            renderEventsPanel();
         };
     }
 
@@ -1743,5 +1752,251 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `).join('')}
             </div>
         `;
+    }
+
+    // ===== EVENTS & MEETUPS SYSTEM =====
+
+    let allEvents = [];
+
+    // Render events panel
+    function renderEventsPanel() {
+        content.innerHTML = `
+            <div style="padding:1.5rem;">
+                <h2 style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">📅 Events & Meetups</h2>
+                <p>Join or create skateboarding events in your area!</p>
+
+                <div style="margin:2rem 0;padding:1.5rem;background:#f0f0f0;border-radius:12px;">
+                    <h3>🎉 Create an Event</h3>
+                    <form id="create-event-form" style="display:flex;flex-direction:column;gap:0.8rem;margin-top:1rem;">
+                        <label>
+                            Event Name *
+                            <input type="text" id="event-name" required placeholder="e.g., Downtown Skate Jam" maxlength="50" />
+                        </label>
+                        <label>
+                            Date & Time *
+                            <input type="datetime-local" id="event-datetime" required />
+                        </label>
+                        <label>
+                            Location *
+                            <input type="text" id="event-location" required placeholder="Venice Skatepark, CA" />
+                        </label>
+                        <label>
+                            Description
+                            <textarea id="event-description" placeholder="What's happening at this event..." rows="3" maxlength="300"></textarea>
+                        </label>
+                        <label>
+                            Event Type
+                            <select id="event-type">
+                                <option value="jam">Skate Jam</option>
+                                <option value="contest">Contest</option>
+                                <option value="meetup">Casual Meetup</option>
+                                <option value="lesson">Lesson/Workshop</option>
+                                <option value="demo">Demo</option>
+                            </select>
+                        </label>
+                        <button type="submit" style="padding:0.8rem;background:#f5576c;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">
+                            Create Event
+                        </button>
+                    </form>
+                </div>
+
+                <hr style="margin:2rem 0;" />
+
+                <h3>🌟 Upcoming Events</h3>
+                <div id="events-list"></div>
+            </div>
+        `;
+
+        // Setup form
+        const createEventForm = document.getElementById('create-event-form');
+        if (createEventForm) {
+            createEventForm.onsubmit = async (e) => {
+                e.preventDefault();
+                await createEvent();
+            };
+        }
+
+        // Load events
+        loadEvents();
+    }
+
+    // Create a new event
+    async function createEvent() {
+        const name = document.getElementById('event-name').value.trim();
+        const datetime = document.getElementById('event-datetime').value;
+        const location = document.getElementById('event-location').value.trim();
+        const description = document.getElementById('event-description').value.trim();
+        const type = document.getElementById('event-type').value;
+
+        if (!name || !datetime || !location) {
+            showModal("Please fill out all required fields.");
+            return;
+        }
+
+        try {
+            const eventData = {
+                name,
+                datetime: new Date(datetime),
+                location,
+                description: description || '',
+                type,
+                organizerId: currentUserId,
+                organizerName: userProfile.username || 'Anonymous',
+                attendees: [currentUserId],
+                attendeeNames: [userProfile.username || 'Anonymous'],
+                createdAt: serverTimestamp()
+            };
+
+            await addDoc(collection(db, `/artifacts/${appId}/events`), eventData);
+
+            showModal("Event created successfully! 🎉");
+            document.getElementById('create-event-form').reset();
+            loadEvents();
+        } catch (error) {
+            console.error("Error creating event:", error);
+            showModal("Failed to create event. Please try again.");
+        }
+    }
+
+    // Load all events
+    async function loadEvents() {
+        try {
+            const now = new Date();
+            const eventsSnapshot = await getDocs(collection(db, `/artifacts/${appId}/events`));
+
+            allEvents = [];
+            eventsSnapshot.forEach(doc => {
+                const event = { id: doc.id, ...doc.data() };
+                // Convert datetime to Date if it's a timestamp
+                if (event.datetime?.toDate) {
+                    event.datetime = event.datetime.toDate();
+                } else if (typeof event.datetime === 'string') {
+                    event.datetime = new Date(event.datetime);
+                }
+                allEvents.push(event);
+            });
+
+            // Filter to upcoming events and sort by date
+            allEvents = allEvents
+                .filter(e => e.datetime > now)
+                .sort((a, b) => a.datetime - b.datetime);
+
+            renderEventsList();
+        } catch (error) {
+            console.error("Error loading events:", error);
+        }
+    }
+
+    // Render events list
+    function renderEventsList() {
+        const eventsList = document.getElementById('events-list');
+        if (!eventsList) return;
+
+        if (allEvents.length === 0) {
+            eventsList.innerHTML = '<p style="color:#666;">No upcoming events. Create one!</p>';
+            return;
+        }
+
+        const eventTypeEmojis = {
+            'jam': '🎸',
+            'contest': '🏆',
+            'meetup': '🤝',
+            'lesson': '📚',
+            'demo': '🎬'
+        };
+
+        eventsList.innerHTML = allEvents.map(event => {
+            const isAttending = event.attendees?.includes(currentUserId);
+            const eventDate = event.datetime;
+            const dateStr = eventDate.toLocaleDateString();
+            const timeStr = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            return `
+                <div style="padding:1.5rem;margin-bottom:1rem;border:2px solid #f5576c;border-radius:12px;background:${isAttending ? 'linear-gradient(135deg, #f093fb10 0%, #f5576c10 100%)' : 'white'};">
+                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.8rem;">
+                        <h4 style="margin:0;color:#f5576c;">${eventTypeEmojis[event.type] || '📅'} ${escapeHtml(event.name)}</h4>
+                        <span style="background:#f5576c;color:white;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.8rem;text-transform:uppercase;">${event.type}</span>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;margin:0.8rem 0;color:#555;font-size:0.95rem;">
+                        <div><strong>📅 When:</strong> ${dateStr} at ${timeStr}</div>
+                        <div><strong>📍 Where:</strong> ${escapeHtml(event.location)}</div>
+                        <div><strong>👤 Organized by:</strong> ${escapeHtml(event.organizerName)}</div>
+                        <div><strong>👥 Attendees:</strong> ${event.attendees?.length || 0}</div>
+                    </div>
+
+                    ${event.description ? `<p style="margin:0.8rem 0;color:#666;font-size:0.9rem;">${escapeHtml(event.description)}</p>` : ''}
+
+                    <div style="margin-top:1rem;">
+                        ${isAttending ? `
+                            <button class="leave-event-btn" data-event-id="${event.id}"
+                                    style="padding:0.6rem 1.2rem;background:#ccc;color:#333;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">
+                                Cancel RSVP
+                            </button>
+                            <span style="margin-left:1rem;color:#4CAF50;font-weight:bold;">✓ You're attending!</span>
+                        ` : `
+                            <button class="join-event-btn" data-event-id="${event.id}"
+                                    style="padding:0.6rem 1.2rem;background:#f5576c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">
+                                RSVP / Join Event
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Add event listeners
+        document.querySelectorAll('.join-event-btn').forEach(btn => {
+            btn.onclick = () => joinEvent(btn.dataset.eventId);
+        });
+
+        document.querySelectorAll('.leave-event-btn').forEach(btn => {
+            btn.onclick = () => leaveEvent(btn.dataset.eventId);
+        });
+    }
+
+    // Join an event
+    async function joinEvent(eventId) {
+        try {
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) return;
+
+            const eventRef = doc(db, `/artifacts/${appId}/events/${eventId}`);
+
+            await updateDoc(eventRef, {
+                attendees: [...(event.attendees || []), currentUserId],
+                attendeeNames: [...(event.attendeeNames || []), userProfile.username || 'Anonymous']
+            });
+
+            showModal("You're attending this event! 🎉");
+            loadEvents();
+        } catch (error) {
+            console.error("Error joining event:", error);
+            showModal("Failed to join event. Please try again.");
+        }
+    }
+
+    // Leave an event
+    async function leaveEvent(eventId) {
+        try {
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) return;
+
+            const eventRef = doc(db, `/artifacts/${appId}/events/${eventId}`);
+
+            const newAttendees = event.attendees.filter(id => id !== currentUserId);
+            const newAttendeeNames = event.attendeeNames.filter(name => name !== (userProfile.username || 'Anonymous'));
+
+            await updateDoc(eventRef, {
+                attendees: newAttendees,
+                attendeeNames: newAttendeeNames
+            });
+
+            showModal("RSVP cancelled.");
+            loadEvents();
+        } catch (error) {
+            console.error("Error leaving event:", error);
+            showModal("Failed to cancel RSVP. Please try again.");
+        }
     }
 });
