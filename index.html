@@ -202,6 +202,15 @@ Q<!DOCTYPE html>
     <script type="module" src="qr-generator.js"></script>
     <script type="module" src="charity-qr.js"></script>
 
+    <!-- Professional Onboarding Flow -->
+    <script type="module">
+        import { showOnboarding } from './onboarding.js';
+        // Show onboarding on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => showOnboarding(), 500);
+        });
+    </script>
+
         <!-- Supabase SDK -->
         <script type="module">
             import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
