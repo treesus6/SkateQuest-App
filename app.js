@@ -122,6 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const crewsBtn = document.getElementById('crewsBtn');
     const eventsBtn = document.getElementById('eventsBtn');
     const shopsBtn = document.getElementById('shopsBtn');
+    const charityBtn = document.getElementById('charityBtn');
     const profileBtn = document.getElementById('profileBtn');
     const centerMapBtn = document.getElementById('centerMapBtn');
     const legalBtn = document.getElementById('legalBtn');
@@ -152,11 +153,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     function setActiveButton(activeBtn) {
         if (!activeBtn) return;
-        [discoverBtn, addSpotBtn, crewsBtn, eventsBtn, shopsBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
+        [discoverBtn, addSpotBtn, crewsBtn, eventsBtn, shopsBtn, charityBtn, profileBtn, legalBtn].filter(btn => btn).forEach(btn => btn.classList.remove('active'));
         activeBtn.classList.add('active');
     }
 
-    console.log('Button check:', {discoverBtn, addSpotBtn, crewsBtn, eventsBtn, shopsBtn, profileBtn, legalBtn});
+    console.log('Button check:', {discoverBtn, addSpotBtn, crewsBtn, eventsBtn, shopsBtn, charityBtn, profileBtn, legalBtn});
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -637,6 +638,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         shopsBtn.onclick = () => {
             setActiveButton(shopsBtn);
             renderShopsPanel();
+        };
+    }
+
+    // Charity button handler
+    if (charityBtn) {
+        charityBtn.onclick = async () => {
+            setActiveButton(charityBtn);
+            try {
+                const { renderCharityShop } = await import('./charity-qr.js');
+                await renderCharityShop();
+            } catch (error) {
+                console.error('Error loading charity module:', error);
+                content.innerHTML = '<div style="padding:1rem;"><h2>Error</h2><p>Failed to load charity module. Please refresh the page.</p></div>';
+            }
         };
     }
 
