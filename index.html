@@ -194,36 +194,26 @@ Q<!DOCTYPE html>
     <!-- Tricks Library -->
     <script src="tricks-library.js"></script>
 
-        <!-- Firebase SDK -->
+        <!-- Supabase SDK -->
         <script type="module">
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-            import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-            import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-            import { getFirestore, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction, query, where, orderBy, limit, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-            import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-            import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+            import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-            // Firebase config - these values are public and safe to expose in client code
-            // Server-side deploys use FIREBASE_TOKEN and FIREBASE_PROJECT_ID from GitHub Actions secrets/variables
-            const firebaseConfig = {
-                apiKey: "AIzaSyBd55v6rN7ngtaoXIwuQb0lHy0p8_69dzU",
-                authDomain: "skatequest-666.firebaseapp.com",
-                projectId: "skatequest-666",
-                storageBucket: "skatequest-666.appspot.com", // <- changed from .firebasestorage.app
-                messagingSenderId: "614575814578",
-                appId: "1:614575814578:web:758b0842447a0e9269d6ab",
-                measurementId: "G-ZLQZQ3CYBK"
-            };
+            // Supabase config
+            // Get your keys from: https://supabase.com/dashboard/project/hreeuqdgrwvnxquxohod/settings/api
+            const SUPABASE_URL = 'https://hreeuqdgrwvnxquxohod.supabase.co'
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhyZWV1cWRncnd2bnhxdXhvaG9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIwODM4NDcsImV4cCI6MjA0NzY1OTg0N30.5Yw5vTGqS4JKkQGZlLpE8wQzh0yI3nPFZOqPvI6gWAo' // TODO: Replace with your actual key
 
-            const app = initializeApp(firebaseConfig);
-            const analytics = getAnalytics(app);
-            const db = getFirestore(app);
-            const auth = getAuth(app);
-            const storage = getStorage(app);
+            // Create Supabase client
+            const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-            const functions = getFunctions(app);
-            window.firebaseInstances = { db, auth, storage, doc, getDoc, setDoc, addDoc, onSnapshot, collection, serverTimestamp, updateDoc, increment, runTransaction, query, where, orderBy, limit, getDocs, collectionGroup, ref, uploadBytes, getDownloadURL, signInAnonymously, onAuthStateChanged, functions, httpsCallable };
-            console.log('✓ Firebase initialized successfully');
+            // App ID for compatibility
+            const appId = 'skatequest'
+
+            // Expose Supabase to window for use in other scripts
+            window.supabaseClient = supabase
+            window.appId = appId
+
+            console.log('✓ Supabase initialized successfully')
         </script>
 
         <!-- Error Handler (load first) -->
