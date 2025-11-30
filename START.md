@@ -28,7 +28,7 @@
 
 ---
 
-## ✅ STEP 2: Connect Your Domain www.sk8quest.com (5 minutes)
+## ✅ STEP 2: Connect Your Domain sk8.quest (5 minutes)
 
 **Go here:** https://app.netlify.com
 
@@ -37,17 +37,17 @@
 3. Click on it
 4. Go to **"Domain settings"** (in the left sidebar)
 5. Click **"Add custom domain"**
-6. Type: `www.sk8quest.com`
+6. Type: `sk8.quest`
 7. Click **"Verify"**
 8. Netlify will show you DNS settings
 9. **Copy those DNS settings**
-10. Go to wherever you bought sk8quest.com (GoDaddy, Namecheap, etc.)
+10. Go to wherever you bought sk8.quest (GoDaddy, Namecheap, etc.)
 11. Add the DNS records Netlify showed you
 12. Wait 10-60 minutes
 13. ✅ Done!
 
 **Your site will be live at:**
-- https://www.sk8quest.com (your domain)
+- https://sk8.quest (your domain)
 - https://skatequest.netlify.app (backup URL)
 
 ---
@@ -93,7 +93,7 @@ After these 3 steps:
 - ✅ Automated monitoring running
 - ✅ You can walk away!
 
-**Your live site:** https://www.sk8quest.com
+**Your live site:** https://sk8.quest
 
 Go show sponsors! 🛹
 

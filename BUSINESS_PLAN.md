@@ -4,7 +4,7 @@
 **Company Name:** SkateQuest
 **Founded:** 2024
 **Location:** Oregon, United States
-**Website:** https://www.sk8quest.com
+**Website:** https://sk8.quest
 **Mission:** Unite the global skateboarding community through technology while providing skateboards to underprivileged youth
 
 ### The Opportunity
@@ -579,10 +579,10 @@ SkateQuest becomes the universal platform for skateboarding culture - where ever
 ---
 
 **For Investment Opportunities:**
-Email: invest@sk8quest.com
+Email: invest@sk8.quest
 
 **For Partnership Opportunities:**
-Email: partnerships@sk8quest.com
+Email: partnerships@sk8.quest
 
 ---
 

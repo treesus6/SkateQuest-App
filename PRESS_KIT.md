@@ -11,7 +11,7 @@
 | **Company Name** | SkateQuest |
 | **Founded** | 2024 |
 | **Headquarters** | Oregon, United States |
-| **Website** | https://www.sk8quest.com |
+| **Website** | https://sk8.quest |
 | **Industry** | Sports Technology, Social Impact, Mobile Apps |
 | **Platform** | Progressive Web App (iOS, Android, Desktop) |
 | **Status** | Pre-Launch / Beta Development |
@@ -100,7 +100,7 @@ Unlike existing skateboarding apps that focus on a single feature (just mapping 
 - ✅ Supabase backend with real-time capabilities
 - ✅ Complete legal framework and terms
 - ✅ Charity system architecture ready
-- ✅ Deployed and accessible at sk8quest.com
+- ✅ Deployed and accessible at sk8.quest
 
 ### Launch Targets (Q1 2025):
 - 1,000 users in first month
@@ -197,11 +197,11 @@ Unlike existing skateboarding apps, SkateQuest offers a comprehensive platform i
 
 SkateQuest targets 100,000 users in its first year and aims to donate 250 complete skateboard setups to kids in need. The platform is free to use and works on any device through modern web technology.
 
-For more information, visit www.sk8quest.com or contact press@sk8quest.com.
+For more information, visit sk8.quest or contact press@sk8.quest.
 
 **Contact:**
-- Email: press@sk8quest.com
-- Website: www.sk8quest.com
+- Email: press@sk8.quest
+- Website: sk8.quest
 
 ---
 
@@ -256,7 +256,7 @@ For more information, visit www.sk8quest.com or contact press@sk8quest.com.
 - Profile images
 - Story templates
 
-**Request high-resolution assets:** press@sk8quest.com
+**Request high-resolution assets:** press@sk8.quest
 
 ---
 
@@ -310,7 +310,7 @@ For more information, visit www.sk8quest.com or contact press@sk8quest.com.
 - **Youth Organizations**: Boys & Girls Clubs, YMCA, community centers
 
 **Partnership Opportunities:**
-- Email: partnerships@sk8quest.com
+- Email: partnerships@sk8.quest
 - See our [Sponsorship Proposal](SPONSORSHIP_PROPOSAL.md)
 
 ---
@@ -330,17 +330,17 @@ For more information, visit www.sk8quest.com or contact press@sk8quest.com.
 ## Contact Information
 
 ### General Press Inquiries
-- **Email**: press@sk8quest.com
+- **Email**: press@sk8.quest
 - **Phone**: [Add phone number]
-- **Press Kit**: https://sk8quest.com/press
+- **Press Kit**: https://sk8.quest/press
 
 ### Founder Interviews
 - **Email**: [your email]
 - **Available for**: Podcasts, video interviews, written Q&A
 
 ### Business & Partnerships
-- **Email**: partnerships@sk8quest.com
-- **Sponsorships**: sponsors@sk8quest.com
+- **Email**: partnerships@sk8.quest
+- **Sponsorships**: sponsors@sk8.quest
 
 ### Social Media
 - **Instagram**: @skatequest *(coming soon)*
@@ -371,7 +371,7 @@ A: Pre-launch. Targeting 1,000 users in Month 1, 100,000 in Year 1.
 A: Currently bootstrapped. Seeking $250K seed round in Q1 2025.
 
 **Q: Can I write about SkateQuest?**
-A: Absolutely! Email press@sk8quest.com for exclusive access, interviews, and assets.
+A: Absolutely! Email press@sk8.quest for exclusive access, interviews, and assets.
 
 ---
 
@@ -386,7 +386,7 @@ A: Absolutely! Email press@sk8quest.com for exclusive access, interviews, and as
 ### Press Mentions:
 - [Publication] - [Date] - [Quote/Summary]
 
-**Have you covered SkateQuest?** Email press@sk8quest.com so we can add you!
+**Have you covered SkateQuest?** Email press@sk8.quest so we can add you!
 
 ---
 
@@ -402,7 +402,7 @@ A: Absolutely! Email press@sk8quest.com for exclusive access, interviews, and as
 ---
 
 **For all media inquiries, interview requests, or additional information:**
-**press@sk8quest.com**
+**press@sk8.quest**
 
 ---
 

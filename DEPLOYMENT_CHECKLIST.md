@@ -9,7 +9,7 @@ This checklist ensures SkateQuest v1.0.0 is properly deployed to production.
 - [x] .gitignore updated to prevent temporary files
 - [x] No TODO/FIXME comments in production code
 - [x] Service worker cache version updated (v9)
-- [x] All URLs point to production domain (www.sk8quest.com)
+- [x] All URLs point to production domain (sk8.quest)
 
 ### ✅ Configuration
 - [x] Firebase config in index.html is correct
@@ -86,8 +86,8 @@ Ensure these are configured in repository settings:
 
 ### 5. DNS Configuration
 Point custom domain to Netlify:
-- **Primary**: www.sk8quest.com → Netlify
-- **Redirect**: sk8quest.com → www.sk8quest.com
+- **Primary**: sk8.quest → Netlify
+- **Redirect**: sk8.quest → sk8.quest
 
 ## Post-Deployment Verification
 
@@ -98,7 +98,7 @@ Point custom domain to Netlify:
 - [ ] Site is live and responding
 
 ### Manual Verification
-- [ ] Visit https://www.sk8quest.com
+- [ ] Visit https://sk8.quest
 - [ ] Test PWA installation on mobile device
 - [ ] Verify map loads with Leaflet tiles
 - [ ] Test anonymous authentication
@@ -216,7 +216,7 @@ Discover and share the best skateboarding spots in your area.
 ✅ Record and share your best tricks
 ✅ 100% free, built by skaters for skaters
 
-Visit: https://www.sk8quest.com
+Visit: https://sk8.quest
 Install it on your phone for offline access!
 ```
 
@@ -267,4 +267,4 @@ git push origin main
 # GitHub Actions will automatically deploy!
 ```
 
-**Live in minutes at:** https://www.sk8quest.com 🚀
+**Live in minutes at:** https://sk8.quest 🚀

@@ -20,7 +20,7 @@ SkateQuest has been successfully prepared for its official v1.0.0 production rel
 
 ### 2. Production Configuration 🔧
 **Updated for production deployment:**
-- ✅ robots.txt → Updated sitemap URL to www.sk8quest.com
+- ✅ robots.txt → Updated sitemap URL to sk8.quest
 - ✅ sitemap.xml → Updated to production domain and current date (2025-11-17)
 - ✅ Service Worker → Already at v9 (latest cache version)
 - ✅ package.json → Version confirmed at 1.0.0
@@ -112,7 +112,7 @@ SkateQuest has been successfully prepared for its official v1.0.0 production rel
 ## Deployment Information
 
 ### Live URLs
-- **Primary**: https://www.sk8quest.com
+- **Primary**: https://sk8.quest
 - **Netlify**: https://skatequest.netlify.app
 
 ### Automated Deployment
@@ -184,7 +184,7 @@ firebase deploy --only firestore:rules,storage:rules
 1. ✅ Review this PR
 2. ✅ Merge to `main` branch
 3. ✅ GitHub Actions deploys automatically
-4. ✅ Monitor deployment at www.sk8quest.com
+4. ✅ Monitor deployment at sk8.quest
 
 ### Post-Launch (Week 1)
 - Monitor Firebase Analytics
@@ -215,7 +215,7 @@ See RELEASE_NOTES.md for roadmap:
 
 - **GitHub**: https://github.com/treesus6/SkateQuest-App
 - **Issues**: Report bugs and request features
-- **Live Site**: https://www.sk8quest.com
+- **Live Site**: https://sk8.quest
 
 ## Conclusion
 

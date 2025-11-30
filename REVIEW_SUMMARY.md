@@ -123,7 +123,7 @@ All functions are imported (`index.html:194-199`) and exposed on `window.firebas
 Test both the Cloud Function path and fallback:
 
 ```javascript
-// In browser console on sk8quest.com:
+// In browser console on sk8.quest:
 // 1. Click the Portal Dimension marker at Newport Skatepark
 // 2. Verify console shows: "✓ Click logged via Cloud Function"
 // 3. Check Firebase console for new document in portalDimensionClicks collection

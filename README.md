@@ -2,11 +2,11 @@
 
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/treesus6/SkateQuest-App/releases/tag/v2.0.0)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-production-success.svg)](https://www.sk8quest.com)
+[![Status](https://img.shields.io/badge/status-production-success.svg)](https://sk8.quest)
 
 A Progressive Web App (PWA) that helps skateboarders discover, share, and track local skating spots. Join challenges, earn badges and XP, connect with the skating community, and help kids get skateboards through our charity system!
 
-**🚀 Live at:** [www.sk8quest.com](https://www.sk8quest.com)
+**🚀 Live at:** [sk8.quest](https://sk8.quest)
 
 ## 🌟 Features
 
@@ -39,7 +39,7 @@ A Progressive Web App (PWA) that helps skateboarders discover, share, and track 
 
 ## 🚀 Live Sites
 
-- **Primary**: https://www.sk8quest.com
+- **Primary**: https://sk8.quest
 - **Netlify**: https://skatequest.netlify.app
 
 ## 📱 How to Use
@@ -69,7 +69,7 @@ A Progressive Web App (PWA) that helps skateboarders discover, share, and track 
 ## 🎯 Quick Start
 
 ### For Users
-1. Visit [www.sk8quest.com](https://www.sk8quest.com)
+1. Visit [sk8.quest](https://sk8.quest)
 2. Click "Add to Home Screen" on mobile to install as an app
 3. Start discovering and sharing skate spots!
 

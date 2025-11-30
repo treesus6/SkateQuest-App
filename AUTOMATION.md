@@ -25,13 +25,13 @@ This will prompt you to login to Firebase once, then deploy everything automatic
 7. Paste into the editor
 8. Click "Publish"
 
-### Step 2: Connect Your Domain (www.sk8quest.com)
+### Step 2: Connect Your Domain (sk8.quest)
 
 1. Go to Netlify: https://app.netlify.com/sites/YOUR-SITE-NAME/settings/domain
 2. Click "Add custom domain"
-3. Enter: `www.sk8quest.com` and `sk8quest.com`
+3. Enter: `sk8.quest` and `sk8.quest`
 4. Netlify will give you DNS records
-5. Go to your domain registrar (GoDaddy, Namecheap, etc.) where you bought sk8quest.com
+5. Go to your domain registrar (GoDaddy, Namecheap, etc.) where you bought sk8.quest
 6. Add these DNS records:
    - Type: `CNAME`, Name: `www`, Value: `YOUR-SITE.netlify.app`
    - Type: `A`, Name: `@`, Value: `75.2.60.5` (Netlify's IP)
@@ -163,15 +163,15 @@ https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/analytics
 https://skatequest.netlify.app
 
 **Custom Domain (After DNS setup):**
-https://www.sk8quest.com
-https://sk8quest.com
+https://sk8.quest
+https://sk8.quest
 
 ---
 
 ## 🎯 Next Steps (Priority Order)
 
 1. **RIGHT NOW**: Run `./deploy.sh` to deploy Firebase rules
-2. **Next 5 mins**: Connect sk8quest.com domain in Netlify
+2. **Next 5 mins**: Connect sk8.quest domain in Netlify
 3. **Next 10 mins**: Add FIREBASE_TOKEN to GitHub secrets
 4. **Optional**: Sign up for Sentry error monitoring
 5. **Done!** Go launch your app! 🚀
@@ -206,7 +206,7 @@ export FIREBASE_TOKEN=your-firebase-token
 ```
 
 **If domain doesn't work:**
-- Check DNS at: https://dnschecker.org/#A/sk8quest.com
+- Check DNS at: https://dnschecker.org/#A/sk8.quest
 - Wait up to 48 hours for DNS propagation
 - Check Netlify DNS settings
 
