@@ -677,6 +677,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <input type="url" id="shop-website" placeholder="https://example.com" />
                     </label>
                     <label>
+                        Instagram Username (without @)
+                        <input type="text" id="shop-instagram" placeholder="skate_shop_official" />
+                    </label>
+                    <label>
                         Hours
                         <input type="text" id="shop-hours" placeholder="Mon-Fri 10am-8pm, Sat-Sun 11am-6pm" />
                     </label>
@@ -720,15 +724,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         shopsItems.innerHTML = skateShops.map((shop, index) => `
-            <div style="padding:1rem;margin-bottom:0.8rem;border:1px solid #ddd;border-radius:8px;background:#f9f9f9;">
-                <h4 style="margin:0 0 0.5rem 0;color:#4CAF50;">${escapeHtml(shop.name)}</h4>
-                ${shop.address ? `<p style="margin:0.3rem 0;">📍 ${escapeHtml(shop.address)}</p>` : ''}
-                ${shop.phone ? `<p style="margin:0.3rem 0;">📞 ${escapeHtml(shop.phone)}</p>` : ''}
-                ${shop.website ? `<p style="margin:0.3rem 0;">🌐 <a href="${escapeHtml(shop.website)}" target="_blank" rel="noopener">${escapeHtml(shop.website)}</a></p>` : ''}
-                ${shop.hours ? `<p style="margin:0.3rem 0;">🕐 ${escapeHtml(shop.hours)}</p>` : ''}
-                <button data-shop-index="${index}" class="view-shop-btn" style="margin-top:0.5rem;padding:0.4rem 0.8rem;background:#d2673d;color:white;border:none;border-radius:6px;cursor:pointer;">
-                    View on Map
-                </button>
+            <div style="padding:1.2rem;margin-bottom:1rem;border:2px solid #FF5722;border-radius:12px;background:linear-gradient(135deg, #fff 0%, #f5f5f5 100%);box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                <h4 style="margin:0 0 0.8rem 0;color:#FF5722;font-size:1.2rem;">${escapeHtml(shop.name)}</h4>
+                ${shop.verified ? '<span style="background:#4CAF50;color:white;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;font-weight:bold;">✓ VERIFIED</span>' : ''}
+
+                <div style="margin-top:0.8rem;display:flex;flex-direction:column;gap:0.5rem;">
+                    ${shop.address ? `<div style="display:flex;align-items:start;gap:0.5rem;">
+                        <span style="font-size:1.2rem;">📍</span>
+                        <span style="color:#333;">${escapeHtml(shop.address)}</span>
+                    </div>` : ''}
+
+                    ${shop.hours ? `<div style="display:flex;align-items:start;gap:0.5rem;">
+                        <span style="font-size:1.2rem;">🕐</span>
+                        <span style="color:#555;">${escapeHtml(shop.hours)}</span>
+                    </div>` : ''}
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;">
+                    ${shop.website ? `
+                        <a href="${escapeHtml(shop.website)}" target="_blank" rel="noopener"
+                           style="flex:1;min-width:120px;padding:0.6rem;background:#4CAF50;color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:bold;display:flex;align-items:center;justify-content:center;gap:0.3rem;">
+                            🌐 Visit Website
+                        </a>
+                    ` : ''}
+
+                    ${shop.phone ? `
+                        <a href="tel:${escapeHtml(shop.phone)}"
+                           style="flex:1;min-width:120px;padding:0.6rem;background:#2196F3;color:white;text-decoration:none;border-radius:8px;text-align:center;font-weight:bold;display:flex;align-items:center;justify-content:center;gap:0.3rem;">
+                            📞 Call Now
+                        </a>
+                    ` : ''}
+
+                    <button data-shop-index="${index}" class="view-shop-btn"
+                            style="flex:1;min-width:120px;padding:0.6rem;background:#FF5722;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.3rem;">
+                        🗺️ View on Map
+                    </button>
+
+                    ${shop.instagram ? `
+                        <a href="https://instagram.com/${escapeHtml(shop.instagram)}" target="_blank" rel="noopener"
+                           style="padding:0.6rem;background:linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:white;text-decoration:none;border-radius:8px;font-weight:bold;display:flex;align-items:center;justify-content:center;">
+                            📸 IG
+                        </a>
+                    ` : ''}
+                </div>
             </div>
         `).join('');
         
@@ -756,6 +795,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const lng = parseFloat(document.getElementById('shop-lng').value);
         const phone = document.getElementById('shop-phone').value.trim();
         const website = document.getElementById('shop-website').value.trim();
+        const instagram = document.getElementById('shop-instagram').value.trim().replace('@', '');
         const hours = document.getElementById('shop-hours').value.trim();
 
         if (!name || !address || isNaN(lat) || isNaN(lng)) {
@@ -783,6 +823,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 phone: phone || null,
                 website: website || null,
+                instagram: instagram || null,
                 hours: hours || null,
                 addedBy: currentUserId,
                 verified: false,
