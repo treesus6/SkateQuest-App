@@ -878,12 +878,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderProfile() {
+        // Calculate trick stats
+        const trickProgress = userProfile.trickProgress || {};
+        const learningCount = Object.values(trickProgress).filter(s => s === 'learning').length;
+        const landedCount = Object.values(trickProgress).filter(s => s === 'landed').length;
+        const masteredCount = Object.values(trickProgress).filter(s => s === 'mastered').length;
+
         content.innerHTML = `
             <h3>My Profile</h3>
             <p><strong>Username:</strong> ${userProfile.username || 'Anonymous'}</p>
             <p><strong>XP:</strong> ${userProfile.xp || 0}</p>
             <p><strong>Spots Added:</strong> ${userProfile.spotsAdded || 0}</p>
-            <button id="callOutBtn">Call-Out User</button>
+
+            <!-- Trick Stats Summary -->
+            <div class="trick-stats-summary" style="margin: 1rem 0; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
+                <h4 style="margin-top: 0;">🎯 Trick Progress</h4>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 100px; background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 5px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">${learningCount}</div>
+                        <div style="font-size: 0.8rem;">Learning</div>
+                    </div>
+                    <div style="flex: 1; min-width: 100px; background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 5px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">${landedCount}</div>
+                        <div style="font-size: 0.8rem;">Landed</div>
+                    </div>
+                    <div style="flex: 1; min-width: 100px; background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 5px;">
+                        <div style="font-size: 1.5rem; font-weight: bold;">${masteredCount}</div>
+                        <div style="font-size: 0.8rem;">Mastered</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trick Tracker Section -->
+            <div style="margin-top: 1.5rem;">
+                <h3>📋 My Trick List</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label for="trickLevelFilter">Filter by level:</label>
+                    <select id="trickLevelFilter" style="padding: 0.5rem; border-radius: 5px;">
+                        <option value="all">All Tricks</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                </div>
+                <div id="tricksList"></div>
+            </div>
+
+            <button id="callOutBtn" style="margin-top: 1.5rem;">Call-Out User</button>
             <div id="callOutFormContainer" style="display:none;">
                 <h4>Issue a Trick Call-Out</h4>
                 <form id="callOutForm">
@@ -939,6 +981,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Load and display call-outs
         loadCallOuts();
+
+        // Initialize trick tracker
+        renderTricksList('all');
+
+        // Add filter listener
+        document.getElementById('trickLevelFilter').onchange = (e) => {
+            renderTricksList(e.target.value);
+        };
     }
 
     async function loadCallOuts() {
@@ -970,5 +1020,129 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showModal(`Completing call-out ${calloutId}... (video recording not implemented yet)`);
             };
         });
+    }
+
+    // Render tricks list based on filter
+    function renderTricksList(level) {
+        const tricksListDiv = document.getElementById('tricksList');
+        if (!tricksListDiv || typeof window.getAllTricks !== 'function') return;
+
+        const trickProgress = userProfile.trickProgress || {};
+        let tricks = [];
+
+        if (level === 'all') {
+            tricks = window.getAllTricks();
+        } else {
+            tricks = window.getTricksByLevel(level);
+        }
+
+        // Group tricks by level for better organization
+        const groupedTricks = {};
+        tricks.forEach(trick => {
+            const trickLevel = Object.keys(window.TRICKS_LIBRARY).find(key =>
+                window.TRICKS_LIBRARY[key].some(t => t.id === trick.id)
+            );
+            if (!groupedTricks[trickLevel]) groupedTricks[trickLevel] = [];
+            groupedTricks[trickLevel].push(trick);
+        });
+
+        let html = '';
+        const levelOrder = ['beginner', 'intermediate', 'advanced', 'expert'];
+        const levelEmojis = {
+            'beginner': '🟢',
+            'intermediate': '🟡',
+            'advanced': '🟠',
+            'expert': '🔴'
+        };
+
+        levelOrder.forEach(lvl => {
+            if (!groupedTricks[lvl] || (level !== 'all' && level !== lvl)) return;
+
+            html += `<div class="trick-level-group" style="margin-bottom: 1.5rem;">
+                <h4 style="text-transform: capitalize; color: #FF5722;">${levelEmojis[lvl]} ${lvl} Tricks</h4>
+                <div class="tricks-grid" style="display: grid; gap: 0.5rem;">`;
+
+            groupedTricks[lvl].forEach(trick => {
+                const status = trickProgress[trick.id] || 'not-started';
+                const statusColors = {
+                    'learning': '#FFA500',
+                    'landed': '#4CAF50',
+                    'mastered': '#9C27B0',
+                    'not-started': '#757575'
+                };
+                const statusLabels = {
+                    'learning': '📚 Learning',
+                    'landed': '✅ Landed',
+                    'mastered': '⭐ Mastered',
+                    'not-started': '⚪ Not Started'
+                };
+
+                html += `
+                <div class="trick-item" style="background: white; padding: 0.75rem; border-radius: 8px; border-left: 4px solid ${statusColors[status]}; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${trick.name}</strong>
+                        <span style="margin-left: 0.5rem; font-size: 0.8rem; color: #666;">${trick.category}</span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <select class="trick-status-select" data-trick-id="${trick.id}" style="padding: 0.3rem; border-radius: 5px; font-size: 0.85rem; border: 1px solid #ddd; background: ${statusColors[status]}; color: white;">
+                            <option value="not-started" ${status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                            <option value="learning" ${status === 'learning' ? 'selected' : ''}>Learning</option>
+                            <option value="landed" ${status === 'landed' ? 'selected' : ''}>Landed</option>
+                            <option value="mastered" ${status === 'mastered' ? 'selected' : ''}>Mastered</option>
+                        </select>
+                    </div>
+                </div>`;
+            });
+
+            html += `</div></div>`;
+        });
+
+        tricksListDiv.innerHTML = html || '<p>No tricks found for this level.</p>';
+
+        // Add event listeners for status changes
+        document.querySelectorAll('.trick-status-select').forEach(select => {
+            select.onchange = async (e) => {
+                const trickId = e.target.dataset.trickId;
+                const newStatus = e.target.value;
+                await updateTrickStatus(trickId, newStatus);
+            };
+        });
+    }
+
+    // Update trick status in Firebase
+    async function updateTrickStatus(trickId, status) {
+        try {
+            const profilePath = `/artifacts/${appId}/users/${currentUserId}/profile/data`;
+            const newProgress = { ...userProfile.trickProgress } || {};
+
+            if (status === 'not-started') {
+                delete newProgress[trickId];
+            } else {
+                newProgress[trickId] = status;
+            }
+
+            await updateDoc(doc(db, profilePath), {
+                trickProgress: newProgress
+            });
+
+            userProfile.trickProgress = newProgress;
+
+            // Award XP for progression milestones
+            if (status === 'landed') {
+                await updateDoc(doc(db, profilePath), { xp: increment(50) });
+                showModal(`🎉 Trick landed! +50 XP`);
+            } else if (status === 'mastered') {
+                await updateDoc(doc(db, profilePath), { xp: increment(100) });
+                showModal(`⭐ Trick mastered! +100 XP`);
+            }
+
+            // Re-render to update stats
+            if (profileBtn.classList.contains('active')) {
+                renderProfile();
+            }
+        } catch (error) {
+            console.error("Error updating trick status:", error);
+            showModal("Failed to update trick status. Please try again.");
+        }
     }
 });
