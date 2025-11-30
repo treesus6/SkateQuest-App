@@ -58,6 +58,7 @@ Q<!DOCTYPE html>
                     <button id="crewsBtn">Crews</button>
                     <button id="eventsBtn">Events</button>
                     <button id="shopsBtn">Shops</button>
+                    <button id="charityBtn">Charity</button>
                     <button id="profileBtn">Profile</button>
                     <button id="legalBtn">Legal</button>
                 </nav>
@@ -191,8 +192,15 @@ Q<!DOCTYPE html>
     <!-- Leaflet heatmap plugin -->
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
+    <!-- QRCode.js for Charity QR Codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <!-- Tricks Library -->
     <script src="tricks-library.js"></script>
+
+    <!-- Charity QR Code System -->
+    <script type="module" src="qr-generator.js"></script>
+    <script type="module" src="charity-qr.js"></script>
 
         <!-- Supabase SDK -->
         <script type="module">
