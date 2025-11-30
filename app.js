@@ -208,30 +208,76 @@ document.addEventListener('DOMContentLoaded', async () => {
         legalBtn.onclick = () => {
             setActiveButton(legalBtn);
             legalText.innerHTML = `
-            <p><em>Last Updated: August 16, 2025</em></p>
-            <p><strong>Legal Disclaimer:</strong> These documents are provided as a starting point. It is strongly recommended that you consult with a qualified legal professional to ensure these policies are complete and appropriate for your specific situation before launching your application.</p>
-            
+            <p><em>Last Updated: November 30, 2024</em></p>
+
+            <div style="background:#ffebee;border-left:4px solid #c62828;padding:1rem;margin:1rem 0;">
+                <h3 style="color:#c62828;margin-top:0;">⚠️ CRITICAL LEGAL DISCLAIMER</h3>
+                <p><strong>READ CAREFULLY BEFORE USING THIS APP</strong></p>
+                <p>By using SkateQuest, you acknowledge that:</p>
+                <ul>
+                    <li>Skateboarding is EXTREMELY DANGEROUS and can result in SERIOUS INJURY OR DEATH</li>
+                    <li>You use this app and participate in skateboarding AT YOUR OWN RISK</li>
+                    <li>SkateQuest, its creators, operators, and contributors are NOT LIABLE for ANY injuries, damages, deaths, or legal consequences</li>
+                    <li>You are SOLELY RESPONSIBLE for your own safety and legal compliance</li>
+                    <li>These terms are LEGALLY BINDING - if you do not agree, DO NOT USE THIS APP</li>
+                </ul>
+                <p><strong>Consult a legal professional for complete legal advice.</strong></p>
+            </div>
+
             <hr>
 
             <h3>Terms of Service</h3>
-            <p>Welcome to SkateQuest (the "App"). By accessing or using our App, you agree to be bound by these Terms of Service and our Privacy Policy.</p>
-            
-            <h4>1. Acknowledgment and Assumption of Risk</h4>
-            <p>Skateboarding is an activity with inherent and significant risks of property damage, serious bodily injury, or death. By using this App, you expressly acknowledge, understand, and agree that you are participating in this activity at your own sole risk. You are responsible for your own safety and the safety of others around you. The creators of SkateQuest are not liable for any accidents, injuries, or damages that may occur in connection with your use of the App.</p>
+            <p>Welcome to SkateQuest (the "App"). By accessing or using our App, you agree to be bound by these Terms of Service and our Privacy Policy. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT USE THIS APP.</p>
 
-            <h4>2. User Responsibilities and Conduct</h4>
+            <h4>1. Complete Assumption of Risk & Waiver of Liability</h4>
+            <p><strong>SKATEBOARDING IS EXTREMELY DANGEROUS.</strong> Skateboarding is an activity with inherent and significant risks including but not limited to: property damage, minor injuries, serious bodily injury, paralysis, permanent disability, and death.</p>
+            <p>By using this App, you EXPRESSLY, VOLUNTARILY, and KNOWINGLY:</p>
             <ul>
-                <li><strong>Safety First:</strong> Always wear appropriate protective gear, including a helmet.</li>
-                <li><strong>Respect Property:</strong> Do not trespass on private property. Only add and visit spots that are legally accessible to the public. You are solely responsible for any legal consequences of trespassing.</li>
-                <li><strong>Obey Laws:</strong> You must obey all local, state, and federal laws, including traffic laws and regulations regarding skateboarding in public areas.</li>
-                <li><strong>Content:</strong> Do not create spots or upload videos that are dangerous, illegal, obscene, or encourage reckless behavior. We reserve the right to remove any content we deem inappropriate.</li>
+                <li>ASSUME ALL RISKS associated with skateboarding and use of this application</li>
+                <li>WAIVE ANY AND ALL CLAIMS against SkateQuest, its creators, contributors, operators, sponsors, and affiliates</li>
+                <li>RELEASE AND HOLD HARMLESS all parties associated with SkateQuest from any liability for injuries, damages, or death</li>
+                <li>AGREE that you are solely responsible for your own safety and the safety of others</li>
+                <li>ACKNOWLEDGE that SkateQuest provides NO warranties regarding the safety, legality, or condition of any locations</li>
+            </ul>
+            <p><strong>This waiver applies to all claims, whether based on negligence, breach of warranty, or any other legal theory.</strong></p>
+
+            <h4>2. Age Requirements & Parental Consent</h4>
+            <p>If you are under 18 years of age, you MUST have your parent or legal guardian's permission to use this app. By using this app as a minor, you confirm that your parent/guardian has read and agreed to these terms on your behalf. Parents/guardians of minors using this app accept full responsibility and liability for their child's use of the app and participation in skateboarding activities.</p>
+
+            <h4>3. User Responsibilities and Conduct</h4>
+            <ul>
+                <li><strong>Safety First:</strong> ALWAYS wear appropriate protective gear including helmet, knee pads, elbow pads, and wrist guards. Failure to wear safety equipment significantly increases risk of injury or death.</li>
+                <li><strong>Respect Property:</strong> DO NOT TRESPASS on private property. Only add and visit spots that are legally accessible to the public. You are SOLELY RESPONSIBLE for any legal consequences including arrest, fines, or civil liability for trespassing or property damage.</li>
+                <li><strong>Obey ALL Laws:</strong> You MUST obey all local, state, and federal laws including traffic laws, skateboarding ordinances, and property regulations. SkateQuest is NOT responsible for any legal violations.</li>
+                <li><strong>Content Standards:</strong> Do not create spots or upload videos that are dangerous, illegal, obscene, promote trespassing, or encourage reckless behavior. We reserve the right to remove any content and terminate accounts without notice.</li>
+                <li><strong>No Encouragement of Illegal Activity:</strong> Users who post content encouraging illegal activities may be reported to law enforcement.</li>
             </ul>
 
-            <h4>3. User-Generated Content</h4>
-            <p>You grant SkateQuest a worldwide, non-exclusive, royalty-free license to use, display, and share the content (spots, videos) you upload within the App. You affirm that you have the necessary rights to the content you post.</p>
-            
-            <h4>4. Governing Law</h4>
-            <p>These terms shall be governed by the laws of the State of Oregon, United States, without regard to its conflict of law provisions.</p>
+            <h4>4. User-Generated Content</h4>
+            <p>You grant SkateQuest a worldwide, non-exclusive, royalty-free, perpetual license to use, display, modify, and share the content (spots, videos, QR codes) you upload within the App. You affirm that you have the necessary rights to the content you post and that your content does not violate any third-party rights or laws.</p>
+
+            <h4>5. Charity QR Code System & Donations</h4>
+            <ul>
+                <li><strong>Demo Mode:</strong> Currently operating in DEMO MODE - NO REAL PAYMENTS are processed. This is a proof-of-concept system.</li>
+                <li><strong>Not a Nonprofit:</strong> SkateQuest is NOT a registered 501(c)(3) nonprofit organization. Any future donations are NOT tax-deductible.</li>
+                <li><strong>No Guarantees:</strong> We make NO GUARANTEES about fund distribution, specific outcomes, timelines, or that any skateboards will actually be provided. All contributions are FINAL and NON-REFUNDABLE.</li>
+                <li><strong>QR Code Placement:</strong> When hiding QR codes, you MUST comply with ALL laws. DO NOT trespass, place codes in dangerous locations, or create hazards. You are SOLELY LIABLE for any consequences.</li>
+                <li><strong>Trick Challenges Optional:</strong> Any trick challenges are SUGGESTIONS ONLY. You are NOT required to attempt any tricks and are SOLELY RESPONSIBLE for your safety if you choose to do so.</li>
+                <li><strong>No Responsibility for Finders:</strong> SkateQuest is NOT responsible for injuries sustained by people attempting trick challenges or searching for QR codes.</li>
+            </ul>
+
+            <h4>6. Limitation of Liability & Indemnification</h4>
+            <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY LAW:</strong> SkateQuest and its creators, operators, contributors, sponsors, and affiliates shall NOT be liable for ANY direct, indirect, incidental, special, consequential, or punitive damages arising from your use of this app, including but not limited to personal injury, death, property damage, lost profits, or legal fees.</p>
+            <p><strong>YOU AGREE TO INDEMNIFY AND HOLD HARMLESS</strong> SkateQuest and all associated parties from any claims, damages, losses, liabilities, and expenses (including attorney fees) arising from your use of the app or violation of these terms.</p>
+
+            <h4>7. Severability & Entire Agreement</h4>
+            <p>If any provision of these terms is found to be unenforceable, the remaining provisions shall continue in full force. These terms constitute the entire agreement between you and SkateQuest.</p>
+
+            <h4>8. Changes to Terms</h4>
+            <p>We reserve the right to modify these terms at any time without notice. Continued use of the app constitutes acceptance of modified terms.</p>
+
+            <h4>9. Governing Law & Dispute Resolution</h4>
+            <p>These terms shall be governed by the laws of the State of Oregon, United States, without regard to its conflict of law provisions. Any disputes shall be resolved through binding arbitration in Oregon, and you waive any right to a jury trial.</p>
 
             <hr>
 
@@ -240,16 +286,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             <h4>1. Information We Collect</h4>
             <ul>
-                <li><strong>Anonymous User ID:</strong> To save your game progress (level, XP, challenges), we assign you a unique, anonymous ID using Firebase Authentication. We do not require or store personal information like your name or email.</li>
-                <li><strong>Geolocation Data:</strong> We require access to your device's GPS to show your live location on the map. This is essential for the core functionality of exploring and adding spots. This location data is not stored historically.</li>
-                <li><strong>Uploaded Content:</strong> We collect and store the skate spots and videos you voluntarily create and upload. This content is stored in Firebase and may be publicly visible to other users of the App.</li>
+                <li><strong>User Account:</strong> To save your progress (XP, tricks, crews, sessions), we create a user account with Supabase Authentication. We assign you a unique, anonymous ID and do not require personal information like your name or email unless you choose to provide it.</li>
+                <li><strong>Geolocation Data:</strong> We require access to your device's GPS to show your live location on the map and enable location-based features. Your current location is used for real-time features but is not stored historically unless you explicitly save a spot or session location.</li>
+                <li><strong>Uploaded Content:</strong> We collect and store the skate spots, videos, crew information, events, and sessions you voluntarily create. This content is stored in Supabase (PostgreSQL) and may be publicly visible to other users.</li>
+                <li><strong>Charity Participation:</strong> If you purchase or scan charity QR codes, we store transaction records, QR code details, donation amounts, and participation data to track charitable impact and prevent fraud.</li>
+                <li><strong>Session Data:</strong> We track your skate sessions including duration, location, and XP earned to provide session history and statistics.</li>
             </ul>
 
             <h4>2. How We Use Information</h4>
-            <p>Your data is used exclusively to operate, maintain, and improve the SkateQuest app. We do not sell or share your data with third-party marketers.</p>
+            <p>Your data is used exclusively to operate, maintain, and improve the SkateQuest app and charity system. We do not sell or share your data with third-party marketers. Charity data may be aggregated anonymously for impact reporting.</p>
 
             <h4>3. Data Security</h4>
-            <p>We use Google Firebase services to store and protect your data, relying on their robust security infrastructure to keep your information safe.</p>
+            <p>We use Supabase (built on PostgreSQL) to store and protect your data, with Row Level Security (RLS) policies ensuring users can only access their own private data. All connections use encrypted HTTPS.</p>
+
+            <h4>4. Your Rights</h4>
+            <p>You may request deletion of your account and associated data at any time by contacting us. Note that some aggregated charity statistics may be retained for transparency reporting.</p>
         `;
             legalModal.style.display = 'block';
         };
