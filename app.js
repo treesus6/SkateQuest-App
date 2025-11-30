@@ -937,8 +937,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         content.innerHTML = `
             <h3>My Profile</h3>
             <p><strong>Username:</strong> ${userProfile.username || 'Anonymous'}</p>
+            ${userProfile.crewTag ? `<p><strong>Crew:</strong> <span style="background:#667eea;color:white;padding:0.2rem 0.5rem;border-radius:4px;font-weight:bold;">[${userProfile.crewTag}]</span></p>` : ''}
             <p><strong>XP:</strong> ${userProfile.xp || 0}</p>
             <p><strong>Spots Added:</strong> ${userProfile.spotsAdded || 0}</p>
+
+            <!-- Session Tracker -->
+            <div style="margin-top:2rem;padding:1.5rem;background:linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 50%, #2BFF88 100%);border-radius:12px;color:white;">
+                <h3 style="margin-top:0;">📊 Session Tracker</h3>
+                ${!userProfile.activeSession ? `
+                    <p>Track your skating sessions!</p>
+                    <button id="start-session-btn" style="padding:0.8rem 1.5rem;background:white;color:#333;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:1rem;">
+                        🎬 Start Session
+                    </button>
+                ` : `
+                    <div id="active-session-display">
+                        <p style="font-size:1.2rem;font-weight:bold;">⏱️ Session in Progress</p>
+                        <p>Started: ${new Date(userProfile.activeSession.startTime?.toDate ? userProfile.activeSession.startTime.toDate() : userProfile.activeSession.startTime).toLocaleTimeString()}</p>
+                        <div id="session-timer" style="font-size:2rem;font-weight:bold;margin:1rem 0;">00:00:00</div>
+                        <button id="end-session-btn" style="padding:0.8rem 1.5rem;background:rgba(255,255,255,0.2);color:white;border:2px solid white;border-radius:8px;font-weight:bold;cursor:pointer;font-size:1rem;">
+                            ⏹️ End Session
+                        </button>
+                    </div>
+                `}
+            </div>
+
+            <!-- Session History -->
+            <div style="margin-top:1.5rem;">
+                <h3>📅 Session History</h3>
+                <div id="session-history"></div>
+            </div>
 
             <!-- Trick Stats Summary -->
             <div class="trick-stats-summary" style="margin: 1rem 0; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
@@ -1039,6 +1066,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('trickLevelFilter').onchange = (e) => {
             renderTricksList(e.target.value);
         };
+
+        // Session tracking handlers
+        const startSessionBtn = document.getElementById('start-session-btn');
+        const endSessionBtn = document.getElementById('end-session-btn');
+
+        if (startSessionBtn) {
+            startSessionBtn.onclick = () => startSession();
+        }
+
+        if (endSessionBtn) {
+            endSessionBtn.onclick = () => endSession();
+        }
+
+        // Start session timer if active
+        if (userProfile.activeSession) {
+            updateSessionTimer();
+        }
+
+        // Load session history
+        loadSessionHistory();
     }
 
     async function loadCallOuts() {
@@ -1193,6 +1240,156 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error("Error updating trick status:", error);
             showModal("Failed to update trick status. Please try again.");
+        }
+    }
+
+    // ===== SESSION TRACKING SYSTEM =====
+
+    let sessionTimerInterval = null;
+
+    // Start a new session
+    async function startSession() {
+        try {
+            const sessionData = {
+                startTime: serverTimestamp(),
+                spotsVisited: [],
+                tricksAttempted: 0,
+                tricksLanded: 0
+            };
+
+            await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), {
+                activeSession: sessionData
+            });
+
+            userProfile.activeSession = { ...sessionData, startTime: new Date() };
+
+            showModal("Session started! Go shred! 🛹");
+            renderProfile();
+        } catch (error) {
+            console.error("Error starting session:", error);
+            showModal("Failed to start session. Please try again.");
+        }
+    }
+
+    // End current session
+    async function endSession() {
+        if (!userProfile.activeSession) return;
+
+        try {
+            const endTime = new Date();
+            const startTime = userProfile.activeSession.startTime?.toDate ? userProfile.activeSession.startTime.toDate() : new Date(userProfile.activeSession.startTime);
+            const duration = Math.floor((endTime - startTime) / 1000); // in seconds
+
+            const sessionRecord = {
+                startTime: userProfile.activeSession.startTime,
+                endTime: serverTimestamp(),
+                duration: duration,
+                spotsVisited: userProfile.activeSession.spotsVisited || [],
+                tricksAttempted: userProfile.activeSession.tricksAttempted || 0,
+                tricksLanded: userProfile.activeSession.tricksLanded || 0,
+                userId: currentUserId
+            };
+
+            // Save to sessions collection
+            await addDoc(collection(db, `/artifacts/${appId}/users/${currentUserId}/sessions`), sessionRecord);
+
+            // Clear active session
+            await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), {
+                activeSession: null
+            });
+
+            // Award XP for session
+            const sessionXP = Math.min(Math.floor(duration / 60) * 5, 200); // 5 XP per minute, max 200
+            if (sessionXP > 0) {
+                await updateDoc(doc(db, `/artifacts/${appId}/users/${currentUserId}/profile/data`), {
+                    xp: increment(sessionXP)
+                });
+            }
+
+            userProfile.activeSession = null;
+
+            if (sessionTimerInterval) {
+                clearInterval(sessionTimerInterval);
+                sessionTimerInterval = null;
+            }
+
+            const durationMin = Math.floor(duration / 60);
+            showModal(`Session ended! Duration: ${durationMin} min. +${sessionXP} XP 🎉`);
+            renderProfile();
+        } catch (error) {
+            console.error("Error ending session:", error);
+            showModal("Failed to end session. Please try again.");
+        }
+    }
+
+    // Update session timer display
+    function updateSessionTimer() {
+        const timerElement = document.getElementById('session-timer');
+        if (!timerElement || !userProfile.activeSession) return;
+
+        const updateTime = () => {
+            const now = new Date();
+            const startTime = userProfile.activeSession.startTime?.toDate ? userProfile.activeSession.startTime.toDate() : new Date(userProfile.activeSession.startTime);
+            const diff = Math.floor((now - startTime) / 1000);
+
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+
+            timerElement.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        };
+
+        updateTime();
+        if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+        sessionTimerInterval = setInterval(updateTime, 1000);
+    }
+
+    // Load session history
+    async function loadSessionHistory() {
+        const historyDiv = document.getElementById('session-history');
+        if (!historyDiv) return;
+
+        try {
+            const sessionsQuery = query(
+                collection(db, `/artifacts/${appId}/users/${currentUserId}/sessions`),
+                orderBy('endTime', 'desc'),
+                limit(10)
+            );
+            const sessionsSnapshot = await getDocs(sessionsQuery);
+
+            if (sessionsSnapshot.empty) {
+                historyDiv.innerHTML = '<p style="color:#666;">No sessions recorded yet. Start your first session!</p>';
+                return;
+            }
+
+            let html = '<div style="display:flex;flex-direction:column;gap:0.8rem;">';
+            sessionsSnapshot.forEach(doc => {
+                const session = doc.data();
+                const duration = session.duration || 0;
+                const durationMin = Math.floor(duration / 60);
+                const durationSec = duration % 60;
+                const endDate = session.endTime?.toDate ? session.endTime.toDate() : new Date();
+
+                html += `
+                    <div style="padding:1rem;background:#f5f5f5;border-radius:8px;border-left:4px solid #2BD2FF;">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.5rem;">
+                            <strong>${endDate.toLocaleDateString()}</strong>
+                            <span style="color:#666;font-size:0.9rem;">${endDate.toLocaleTimeString()}</span>
+                        </div>
+                        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.9rem;color:#555;">
+                            <span>⏱️ ${durationMin}m ${durationSec}s</span>
+                            <span>📍 ${session.spotsVisited?.length || 0} spots</span>
+                            <span>🎯 ${session.tricksLanded || 0}/${session.tricksAttempted || 0} tricks</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            historyDiv.innerHTML = html;
+        } catch (error) {
+            console.error("Error loading session history:", error);
+            historyDiv.innerHTML = '<p style="color:#999;">Failed to load session history.</p>';
         }
     }
 
