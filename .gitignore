@@ -54,3 +54,6 @@ clear-cache.html
 validate-fixes.js
 *.bak
 *.local
+android/
+ios/
+node_modules/

@@ -1,0 +1,32 @@
+{
+  "appId": "com.skatequest.app",
+  "appName": "SkateQuest",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#d2673d",
+      "showSpinner": false,
+      "androidSpinnerStyle": "small",
+      "iosSpinnerStyle": "small"
+    },
+    "StatusBar": {
+      "style": "dark",
+      "backgroundColor": "#d2673d"
+    },
+    "Camera": {
+      "permissions": {
+        "camera": "SkateQuest needs camera access to record your tricks and spot photos",
+        "photos": "SkateQuest needs photo access to share your skateboarding videos"
+      }
+    },
+    "Geolocation": {
+      "permissions": {
+        "location": "SkateQuest needs location access to find skate spots near you"
+      }
+    }
+  }
+}
