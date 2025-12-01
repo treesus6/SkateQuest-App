@@ -193,6 +193,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         challengesBtn.onclick = () => {
             setActiveButton(challengesBtn);
             content.innerHTML = '<h2>Challenges</h2><p>View and participate in skating challenges. Feature coming soon!</p>';
+            // Switch video category
+            if (window.videoLoopManager) {
+                window.videoLoopManager.setCategoryByContext('challenges');
+            }
         };
     }
 
@@ -200,6 +204,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         profileBtn.onclick = () => {
             setActiveButton(profileBtn);
             content.innerHTML = '<h2>Profile</h2><p>Your skater profile and stats. Feature coming soon!</p>';
+            // Switch video category
+            if (window.videoLoopManager) {
+                window.videoLoopManager.setCategoryByContext('profile');
+            }
         };
     }
 
@@ -565,7 +573,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (discoverBtn) {
-        discoverBtn.onclick = () => { setActiveButton(discoverBtn); content.innerHTML = '<p>Use the map to discover skate spots. Tap markers for details.</p>'; };
+        discoverBtn.onclick = () => {
+            setActiveButton(discoverBtn);
+            content.innerHTML = '<p>Use the map to discover skate spots. Tap markers for details.</p>';
+            // Switch video category
+            if (window.videoLoopManager) {
+                window.videoLoopManager.setCategoryByContext('discover');
+            }
+        };
     }
 
     // Helper to show the Add Spot form for given coordinates
@@ -673,6 +688,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         crewsBtn.onclick = () => {
             setActiveButton(crewsBtn);
             renderCrewsPanel();
+            // Switch video category
+            if (window.videoLoopManager) {
+                window.videoLoopManager.setCategoryByContext('crews');
+            }
         };
     }
 
@@ -681,6 +700,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         eventsBtn.onclick = () => {
             setActiveButton(eventsBtn);
             renderEventsPanel();
+            // Switch video category
+            if (window.videoLoopManager) {
+                window.videoLoopManager.setCategoryByContext('events');
+            }
         };
     }
 
@@ -689,6 +712,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         shopsBtn.onclick = () => {
             setActiveButton(shopsBtn);
             renderShopsPanel();
+            // Switch video category
+            if (window.videoLoopManager) {
+                window.videoLoopManager.setCategoryByContext('shops');
+            }
         };
     }
 
@@ -696,6 +723,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (charityBtn) {
         charityBtn.onclick = async () => {
             setActiveButton(charityBtn);
+            // Switch video category
+            if (window.videoLoopManager) {
+                window.videoLoopManager.setCategoryByContext('shops');
+            }
             try {
                 const { renderCharityShop } = await import('./charity-qr.js');
                 await renderCharityShop();

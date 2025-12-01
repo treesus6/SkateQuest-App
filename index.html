@@ -42,6 +42,26 @@ Q<!DOCTYPE html>
         <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     </head>
     <body>
+        <!-- Background Video Player -->
+        <div id="video-background-container">
+            <video id="background-video" autoplay loop muted playsinline></video>
+            <div id="video-overlay"></div>
+        </div>
+
+        <!-- Video Controls -->
+        <div id="video-controls">
+            <button id="video-play-pause" class="video-control-btn" title="Play/Pause">
+                <span id="play-pause-icon">⏸</span>
+            </button>
+            <div id="video-category-selector">
+                <button class="category-btn active" data-category="street">Street</button>
+                <button class="category-btn" data-category="park">Park</button>
+                <button class="category-btn" data-category="vert">Vert</button>
+                <button class="category-btn" data-category="cruising">Cruising</button>
+            </div>
+            <button id="video-next" class="video-control-btn" title="Next Video">⏭</button>
+        </div>
+
         <header>
             <h1>SkateQuest 🛹</h1>
             <div id="health-status" style="position:absolute;top:10px;right:10px;padding:5px 10px;border-radius:20px;font-size:12px;background:#2a8f2a;color:#fff;display:none;">
@@ -242,7 +262,10 @@ Q<!DOCTYPE html>
     <script src="app.js?v=12" defer></script>
     <script src="pwa.js?v=12" defer></script>
     <script src="parks.js?v=1" defer></script>
-    
+
+    <!-- Background Video Loops -->
+    <script type="module" src="video-loops.js?v=1" defer></script>
+
     <!-- Portal Dimension Integration -->
     <script src="portal-dimension.js?v=1" defer></script>
     </body>
