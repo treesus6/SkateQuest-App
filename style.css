@@ -930,3 +930,1057 @@ header {
         transition: none;
     }
 }
+
+/* ====== GAMIFICATION SYSTEM STYLES ====== */
+
+/* Trick Tree */
+.trick-tree-container {
+    padding: 2rem;
+}
+
+.trick-tree-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.trick-level-section {
+    margin-bottom: 3rem;
+}
+
+.trick-level-title {
+    color: var(--primary-orange);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.trick-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.trick-card {
+    background: var(--bg-card);
+    border: 2px solid var(--text-muted);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.trick-card.unlocked {
+    border-color: var(--success);
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+}
+
+.trick-card.can-unlock {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 15px rgba(255, 87, 34, 0.3);
+}
+
+.trick-card.locked {
+    opacity: 0.6;
+    filter: grayscale(50%);
+}
+
+.trick-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.trick-card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.trick-card-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.trick-card-difficulty {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.trick-card-category {
+    display: inline-block;
+    background: var(--primary-orange);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.trick-card-requirements {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--text-muted);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.unlock-trick-btn {
+    margin-top: 1rem;
+    width: 100%;
+    background: var(--primary-orange);
+    color: var(--text-primary);
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.unlock-trick-btn:hover {
+    background: var(--primary-red);
+    transform: scale(1.05);
+}
+
+/* Battle Pass */
+.battle-pass-container {
+    padding: 2rem;
+}
+
+.battle-pass-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.battle-pass-season {
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-pink));
+    color: var(--text-primary);
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.battle-pass-progress-bar {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 2px solid var(--primary-orange);
+}
+
+.battle-pass-level {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-orange);
+    margin-bottom: 1rem;
+}
+
+.progress-bar-container {
+    position: relative;
+    background: var(--bg-darker);
+    height: 40px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--text-muted);
+}
+
+.progress-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-orange), var(--primary-red));
+    transition: width 0.5s ease;
+}
+
+.progress-bar-text {
+    position: relative;
+    text-align: center;
+    line-height: 40px;
+    font-weight: bold;
+    color: var(--text-primary);
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+.battle-pass-tiers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.battle-pass-tier {
+    background: var(--bg-card);
+    border: 2px solid var(--text-muted);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.battle-pass-tier.tier-unlocked {
+    border-color: var(--success);
+    background: rgba(46, 204, 113, 0.1);
+}
+
+.battle-pass-tier.tier-current {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 20px rgba(255, 87, 34, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.battle-pass-tier.tier-locked {
+    opacity: 0.5;
+}
+
+.tier-level {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-orange);
+    margin-bottom: 0.5rem;
+}
+
+.tier-xp {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.tier-reward {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.tier-checkmark {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    color: var(--success);
+}
+
+/* Challenges */
+.challenges-container {
+    padding: 2rem;
+}
+
+.challenge-card {
+    background: var(--bg-card);
+    border: 2px solid var(--primary-orange);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.challenge-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow-orange);
+}
+
+.challenge-card.completed {
+    border-color: var(--success);
+    background: rgba(46, 204, 113, 0.1);
+}
+
+.daily-challenge {
+    border-left: 5px solid #FFD700;
+}
+
+.weekly-challenge {
+    border-left: 5px solid #9B59B6;
+}
+
+.challenge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.challenge-type {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--primary-orange);
+}
+
+.challenge-xp {
+    background: var(--success);
+    color: var(--text-primary);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.challenge-description {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.challenge-progress {
+    margin-top: 1rem;
+}
+
+.challenge-complete-badge {
+    margin-top: 1rem;
+    text-align: center;
+    background: var(--success);
+    color: var(--text-primary);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Charity Rewards */
+.charity-rewards-container {
+    padding: 2rem;
+}
+
+.charity-points-display {
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-pink));
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.charity-points-amount {
+    font-size: 4rem;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.charity-points-label {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-top: 0.5rem;
+}
+
+.charity-description {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.charity-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.charity-option {
+    background: var(--bg-card);
+    border: 2px solid var(--primary-orange);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.charity-option:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow-orange);
+}
+
+.charity-name {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-orange);
+    margin-bottom: 0.5rem;
+}
+
+.charity-desc {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.donate-btn {
+    width: 100%;
+    background: var(--success);
+    color: var(--text-primary);
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.donate-btn:hover:not(:disabled) {
+    background: #27ae60;
+    transform: scale(1.05);
+}
+
+.donate-btn:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Gamification Notifications */
+.gamification-notification {
+    position: fixed;
+    top: 100px;
+    right: -400px;
+    background: var(--bg-card);
+    border: 2px solid var(--primary-orange);
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 350px;
+    box-shadow: var(--shadow-glow-orange);
+    z-index: 10000;
+    transition: right 0.3s ease;
+}
+
+.gamification-notification.show {
+    right: 20px;
+}
+
+.notification-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-orange);
+    margin-bottom: 0.5rem;
+}
+
+.notification-message {
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .trick-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .battle-pass-tiers {
+        grid-template-columns: 1fr;
+    }
+
+    .charity-options {
+        grid-template-columns: 1fr;
+    }
+
+    .battle-pass-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .gamification-notification {
+        right: -100%;
+        left: 10px;
+        max-width: calc(100% - 20px);
+    }
+
+    .gamification-notification.show {
+        right: auto;
+        left: 10px;
+    }
+}
+
+/* ====== SKATE LOUNGE STYLES ====== */
+
+.skate-lounge {
+    padding: 2rem;
+}
+
+.lounge-header {
+    margin-bottom: 2rem;
+}
+
+.lounge-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--text-muted);
+}
+
+.lounge-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.lounge-tab.active {
+    color: var(--primary-orange);
+    border-bottom-color: var(--primary-orange);
+}
+
+.lounge-tab:hover {
+    color: var(--text-primary);
+}
+
+.lounge-tab-content {
+    display: none;
+}
+
+.lounge-tab-content.active {
+    display: block;
+}
+
+/* Chat Tab */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.chat-rooms {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-darker);
+    overflow-x: auto;
+    border-bottom: 2px solid var(--primary-orange);
+}
+
+.room-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--text-muted);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.room-btn.active {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+}
+
+.room-btn:hover {
+    transform: translateY(-2px);
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    background: var(--bg-darker);
+}
+
+.chat-message {
+    margin-bottom: 1rem;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.message-user {
+    font-weight: bold;
+}
+
+.message-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.message-content {
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.no-messages {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--text-muted);
+}
+
+.chat-input-container input {
+    flex: 1;
+    background: var(--bg-darker);
+    border: 1px solid var(--text-muted);
+    color: var(--text-primary);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.chat-input-container button {
+    background: var(--primary-orange);
+    color: var(--text-primary);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.chat-input-container button:hover {
+    background: var(--primary-red);
+}
+
+/* Sessions Tab */
+.sessions-container {
+    padding: 1rem;
+}
+
+.sessions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.sessions-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.session-card {
+    background: var(--bg-card);
+    border: 2px solid var(--primary-orange);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.session-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow-orange);
+}
+
+.session-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-orange);
+    margin-bottom: 0.5rem;
+}
+
+.session-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.session-details {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.session-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.join-session-btn,
+.leave-session-btn {
+    flex: 1;
+    background: var(--success);
+    color: var(--text-primary);
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.leave-session-btn {
+    background: var(--danger);
+}
+
+.join-session-btn:hover {
+    background: #27ae60;
+}
+
+.leave-session-btn:hover {
+    background: #c0392b;
+}
+
+.join-session-btn:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+}
+
+/* Streams Tab */
+.streams-container {
+    padding: 1rem;
+}
+
+.streams-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.streams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.stream-card {
+    background: var(--bg-card);
+    border: 2px solid var(--primary-orange);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stream-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow-orange);
+}
+
+.stream-thumbnail {
+    position: relative;
+    background: var(--bg-darker);
+    padding-top: 56.25%; /* 16:9 aspect ratio */
+}
+
+.live-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--danger);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.stream-info {
+    padding: 1rem;
+}
+
+.stream-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.stream-streamer {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.stream-viewers {
+    color: var(--primary-orange);
+    font-weight: bold;
+}
+
+/* Projects Tab */
+.projects-container {
+    padding: 1rem;
+}
+
+.projects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.project-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.project-type-card {
+    background: var(--bg-card);
+    border: 2px solid var(--primary-orange);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.project-type-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow-orange);
+}
+
+.project-type-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.project-type-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+/* ====== AR EXPLORER STYLES ====== */
+
+.ar-explorer {
+    padding: 2rem;
+}
+
+.ar-header {
+    margin-bottom: 2rem;
+}
+
+.ar-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.ar-btn {
+    background: var(--primary-orange);
+    color: var(--text-primary);
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ar-btn:hover {
+    background: var(--primary-red);
+    transform: scale(1.05);
+}
+
+.ar-view {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    background: var(--bg-darker);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+#ar-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#ar-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#ar-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.ar-marker {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--primary-orange);
+    border-radius: 12px;
+    padding: 0.75rem;
+    transform: translate(-50%, -50%);
+    backdrop-filter: blur(10px);
+    animation: arMarkerPulse 2s ease-in-out infinite;
+}
+
+@keyframes arMarkerPulse {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 1; }
+}
+
+.ar-trick-marker {
+    border-color: #FFD700;
+}
+
+.ar-spot-marker {
+    border-color: var(--primary-orange);
+}
+
+.ar-line-marker {
+    border-color: #00D9FF;
+}
+
+.ar-path-marker {
+    background: var(--primary-orange);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ar-marker-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.ar-marker-label {
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.ar-marker-info {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.ar-path-number {
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.ar-overlay-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+}
+
+.ar-overlay-controls button {
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--text-primary);
+    border: 2px solid var(--primary-orange);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.ar-overlay-controls button:hover {
+    background: var(--primary-orange);
+}
+
+.ar-info {
+    margin-top: 2rem;
+}
+
+.ar-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.ar-feature-card {
+    background: var(--bg-card);
+    border: 2px solid var(--primary-orange);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.ar-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow-orange);
+}
+
+.ar-feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.ar-feature-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-orange);
+    margin-bottom: 0.5rem;
+}
+
+.ar-feature-desc {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .lounge-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .lounge-tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .chat-container {
+        height: 500px;
+    }
+
+    .sessions-header,
+    .streams-header,
+    .projects-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .streams-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ar-view {
+        height: 400px;
+    }
+
+    .ar-feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
