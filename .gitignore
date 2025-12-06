@@ -54,3 +54,5 @@ clear-cache.html
 validate-fixes.js
 *.bak
 *.local
+.env
+.env
