@@ -42,12 +42,12 @@ USING (true);
 CREATE POLICY "Users can update own profile"
 ON public.profiles FOR UPDATE
 TO authenticated
-USING (auth.uid() = id);
+USING ((select auth.uid()) = id);
 
 CREATE POLICY "Users can insert own profile"
 ON public.profiles FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = id);
+WITH CHECK ((select auth.uid()) = id);
 
 -- =====================================================
 -- 2. SKATE SPOTS TABLE
@@ -82,12 +82,12 @@ USING (true);
 CREATE POLICY "Authenticated users can insert spots"
 ON public.skate_spots FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = added_by);
+WITH CHECK ((select auth.uid()) = added_by);
 
 CREATE POLICY "Users can update their own spots"
 ON public.skate_spots FOR UPDATE
 TO authenticated
-USING (auth.uid() = added_by);
+USING ((select auth.uid()) = added_by);
 
 -- Spatial index for performance
 CREATE INDEX idx_skate_spots_location ON public.skate_spots USING GIST(location);
@@ -120,12 +120,12 @@ USING (true);
 CREATE POLICY "Authenticated users can create challenges"
 ON public.challenges FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = created_by);
+WITH CHECK ((select auth.uid()) = created_by);
 
 CREATE POLICY "Challenge creators can update their challenges"
 ON public.challenges FOR UPDATE
 TO authenticated
-USING (auth.uid() = created_by);
+USING ((select auth.uid()) = created_by);
 
 CREATE INDEX idx_challenges_spot_id ON public.challenges(spot_id);
 CREATE INDEX idx_challenges_created_by ON public.challenges(created_by);
@@ -153,17 +153,17 @@ ALTER TABLE public.trick_callouts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view callouts they're involved in"
 ON public.trick_callouts FOR SELECT
 TO authenticated
-USING (auth.uid() = challenger_id OR auth.uid() = target_id);
+USING ((select auth.uid()) = challenger_id OR (select auth.uid()) = target_id);
 
 CREATE POLICY "Users can create callouts"
 ON public.trick_callouts FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = challenger_id);
+WITH CHECK ((select auth.uid()) = challenger_id);
 
 CREATE POLICY "Target users can update callout status"
 ON public.trick_callouts FOR UPDATE
 TO authenticated
-USING (auth.uid() = target_id);
+USING ((select auth.uid()) = target_id);
 
 CREATE INDEX idx_callouts_challenger ON public.trick_callouts(challenger_id);
 CREATE INDEX idx_callouts_target ON public.trick_callouts(target_id);
@@ -198,17 +198,17 @@ USING (true);
 CREATE POLICY "Authenticated users can create crews"
 ON public.crews FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = founder_id);
+WITH CHECK ((select auth.uid()) = founder_id);
 
 CREATE POLICY "Crew members can update crew"
 ON public.crews FOR UPDATE
 TO authenticated
-USING (auth.uid() = ANY(members));
+USING ((select auth.uid()) = ANY(members));
 
 CREATE POLICY "Crew founders can delete crew"
 ON public.crews FOR DELETE
 TO authenticated
-USING (auth.uid() = founder_id);
+USING ((select auth.uid()) = founder_id);
 
 CREATE INDEX idx_crews_tag ON public.crews(tag);
 CREATE INDEX idx_crews_founder ON public.crews(founder_id);
@@ -236,12 +236,12 @@ ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own sessions"
 ON public.sessions FOR SELECT
 TO authenticated
-USING (auth.uid() = user_id);
+USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can insert own sessions"
 ON public.sessions FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = user_id);
+WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE INDEX idx_sessions_user_id ON public.sessions(user_id);
 CREATE INDEX idx_sessions_end_time ON public.sessions(end_time DESC);
@@ -275,12 +275,12 @@ USING (true);
 CREATE POLICY "Authenticated users can create events"
 ON public.events FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = organizer_id);
+WITH CHECK ((select auth.uid()) = organizer_id);
 
 CREATE POLICY "Organizers and attendees can update events"
 ON public.events FOR UPDATE
 TO authenticated
-USING (auth.uid() = organizer_id OR auth.uid() = ANY(attendees));
+USING ((select auth.uid()) = organizer_id OR (select auth.uid()) = ANY(attendees));
 
 CREATE INDEX idx_events_datetime ON public.events(datetime);
 CREATE INDEX idx_events_organizer ON public.events(organizer_id);
@@ -316,12 +316,12 @@ USING (true);
 CREATE POLICY "Authenticated users can add shops"
 ON public.shops FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid() = added_by);
+WITH CHECK ((select auth.uid()) = added_by);
 
 CREATE POLICY "Shop submitters can update their shops"
 ON public.shops FOR UPDATE
 TO authenticated
-USING (auth.uid() = added_by);
+USING ((select auth.uid()) = added_by);
 
 CREATE INDEX idx_shops_location ON public.shops USING GIST(location);
 
