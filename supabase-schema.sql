@@ -1,9 +1,16 @@
 -- SkateQuest Supabase Database Schema
 -- Run this in your Supabase SQL Editor
 
+-- Create dedicated schema for extensions (security best practice)
+CREATE SCHEMA IF NOT EXISTS extensions;
+
 -- Enable necessary extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "postgis";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS "postgis" SCHEMA extensions;
+
+-- Add extensions schema to search_path for all roles
+-- This ensures PostGIS functions work without schema qualification
+ALTER DATABASE postgres SET search_path TO public, extensions;
 
 -- =====================================================
 -- 1. USER PROFILES TABLE

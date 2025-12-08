@@ -13,26 +13,37 @@ This guide will help you migrate SkateQuest from Firebase to Supabase.
 4. Paste into the SQL Editor and click **Run**
 5. Wait for all tables and policies to be created
 
-### 1.2 Fix the RLS Warning
+### 1.2 Fix PostGIS Extension Schema (Security Best Practice)
+If you've already run the old schema and PostGIS is in the `public` schema, run this migration:
+
+1. Go to **SQL Editor** in Supabase Dashboard
+2. Copy the contents of `supabase-postgis-migration.sql`
+3. Paste and click **Run**
+
+This moves the PostGIS extension to a dedicated `extensions` schema, which is a security best practice.
+
+**For new installations**: The updated `supabase-schema.sql` already includes this fix.
+
+### 1.3 Fix the RLS Warning
 The `spatial_ref_sys` warning is safe to ignore, but to fix it:
 ```sql
-ALTER TABLE public.spatial_ref_sys ENABLE ROW LEVEL SECURITY;
+ALTER TABLE extensions.spatial_ref_sys ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public read access on spatial_ref_sys"
-ON public.spatial_ref_sys
+ON extensions.spatial_ref_sys
 FOR SELECT
 TO public
 USING (true);
 ```
 
-### 1.3 Create Storage Buckets
+### 1.4 Create Storage Buckets
 1. Go to **Storage** in Supabase Dashboard
 2. Create these buckets (if not created automatically by the SQL):
    - `spot-photos` (public)
    - `spot-videos` (public)
    - `challenge-proofs` (public)
 
-### 1.4 Create RPC Functions for Increments
+### 1.5 Create RPC Functions for Increments
 In SQL Editor, run:
 
 ```sql
